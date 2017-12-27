@@ -8,7 +8,10 @@ if (typeof AFRAME === 'undefined') {
  * Geo Projection component for A-Frame.
  */
 AFRAME.registerComponent('geo-projection', {
-  schema: {},
+  schema: {
+    width: {default: 1},
+    height: {default: 1}
+  },
 
   /**
    * Set if component needs multiple instancing.

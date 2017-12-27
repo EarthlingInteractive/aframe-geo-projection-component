@@ -10,16 +10,31 @@ suite('geo-projection component', function () {
   setup(function (done) {
     el = entityFactory();
     el.addEventListener('componentinitialized', function (evt) {
-      if (evt.detail.name !== 'geo-projection') { return; }
+      if (evt.detail.name !== 'geo-projection') {
+        return;
+      }
       component = el.components['geo-projection'];
       done();
     });
     el.setAttribute('geo-projection', {});
   });
 
-  suite('foo property', function () {
-    test('is good', function () {
-      assert.equal(1, 1);
+  suite('schema definition', function () {
+    suite('width property', function () {
+      test('exists', function () {
+        assert.property(component.data, 'width');
+      });
+      test('defaults to 1', function () {
+        assert.propertyVal(component.data, 'width', 1);
+      });
+    });
+    suite('height property', function () {
+      test('exists', function () {
+        assert.property(component.data, 'height');
+      });
+      test('defaults to 1', function () {
+        assert.propertyVal(component.data, 'height', 1);
+      });
     });
   });
 });
