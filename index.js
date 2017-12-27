@@ -17,11 +17,6 @@ AFRAME.registerComponent('geo-projection', {
   },
 
   /**
-   * Set if component needs multiple instancing.
-   */
-  multiple: false,
-
-  /**
    * Called once when component is attached. Generally for initial setup.
    */
   init: function () { },
@@ -36,22 +31,5 @@ AFRAME.registerComponent('geo-projection', {
    * Called when a component is removed (e.g., via removeAttribute).
    * Generally undoes all modifications to the entity.
    */
-  remove: function () { },
-
-  /**
-   * Called on each scene tick.
-   */
-  // tick: function (t) { },
-
-  /**
-   * Called when entity pauses.
-   * Use to stop or remove any dynamic or background behavior such as events.
-   */
-  pause: function () { },
-
-  /**
-   * Called when entity resumes.
-   * Use to continue or add any dynamic or background behavior such as events.
-   */
-  play: function () { }
+  remove: function () { }
 });
