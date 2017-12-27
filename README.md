@@ -11,7 +11,9 @@ For [A-Frame](https://aframe.io).
 
 | Property | Description | Default Value |
 | -------- | ----------- | ------------- |
-|          |             |               |
+| src      | path to a GeoJson or TopJson asset | None              |
+| width      | width of the plane on which to project the map | 1              |
+| height      | height of the plane on which to project the map | 1              |
 
 ### Installation
 
