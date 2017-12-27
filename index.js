@@ -9,6 +9,9 @@ if (typeof AFRAME === 'undefined') {
  */
 AFRAME.registerComponent('geo-projection', {
   schema: {
+    src: {
+      type: 'asset'
+    },
     width: {default: 1},
     height: {default: 1}
   },

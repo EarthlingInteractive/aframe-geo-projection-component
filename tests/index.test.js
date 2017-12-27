@@ -36,5 +36,13 @@ suite('geo-projection component', function () {
         assert.propertyVal(component.data, 'height', 1);
       });
     });
+    suite('src property', function () {
+      test('exists', function () {
+        assert.property(component.data, 'src');
+      });
+      test('defaults to empty string', function () {
+        assert.propertyVal(component.data, 'src', '');
+      });
+    });
   });
 });
