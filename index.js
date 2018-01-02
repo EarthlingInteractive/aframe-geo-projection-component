@@ -5,6 +5,7 @@ var d3 = Object.assign({}, require('d3-scale'), require('d3-geo'), require('d3-g
 if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
 }
+const THREE = AFRAME.THREE;
 
 /**
  * Geo Projection component for A-Frame.
@@ -24,13 +25,16 @@ AFRAME.registerComponent('geo-projection', {
   /**
    * Called once when component is attached. Generally for initial setup.
    */
-  init: function () { },
+  init: function () {
+    this.loader = new THREE.FileLoader();
+  },
 
   /**
    * Called when component is attached and when component data changes.
    * Generally modifies the entity based on the data.
    */
-  update: function (oldData) { },
+  update: function (oldData) {
+  },
 
   /**
    * Called when a component is removed (e.g., via removeAttribute).

@@ -4,6 +4,8 @@ var d3 = require('d3-geo');
 require('../index.js');
 var entityFactory = require('./helpers').entityFactory;
 
+var THREE = AFRAME.THREE;
+
 suite('geo-projection component', function () {
   var component;
   var el;
@@ -52,6 +54,17 @@ suite('geo-projection component', function () {
       test('defaults to geoIdentity', function () {
         assert.propertyVal(component.data, 'projection', 'geoIdentity');
       });
+    });
+  });
+
+  suite('#init', function () {
+    test('initializes a FileLoader', function () {
+      var fakeLoader = sinon.createStubInstance(THREE.FileLoader);
+      var loaderStub = sinon.stub(THREE, 'FileLoader');
+      loaderStub.returns(fakeLoader);
+      component.init();
+      sinon.assert.calledWithNew(loaderStub);
+      assert.equal(component.loader, fakeLoader);
     });
   });
 
