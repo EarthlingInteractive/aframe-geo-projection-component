@@ -1,6 +1,5 @@
 /* global assert, setup, suite, test */
 require('aframe');
-var d3 = require('d3-geo');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
 require('../index.js');
@@ -116,64 +115,6 @@ suite('geo-projection component', function () {
       var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
       component.onSrcLoaded(text);
       sinon.assert.calledWithMatch(component.render, { type: 'LineString' });
-    });
-  });
-
-  suite('#getD3Projection', function () {
-    test('exists as a method on the component', function () {
-      assert.property(component, 'getD3Projection');
-    });
-    test('uses the projection attribute to look up a d3 projection', function () {
-      el.setAttribute('geo-projection', {
-        projection: 'geoAlbers'
-      });
-      assert.equal(component.getD3Projection().toString(), d3.geoAlbers().toString());
-    });
-    test('can also be a d3 transform', function () {
-      assert.equal(component.getD3Projection().toString(), d3.geoIdentity().toString());
-    });
-    test('throws an error if an invalid projection is specified', function () {
-      el.setAttribute('geo-projection', {
-        projection: 'badStuff'
-      });
-      assert.throws(component.getD3Projection.bind(component), 'Invalid d3 projection; use a projection from d3-geo or d3-geo-projection');
-    });
-  });
-
-  suite('#getWorldTransform', function () {
-    test('exists as a method on the component', function () {
-      assert.property(component, 'getWorldTransform');
-    });
-    test('returns a transform that maps from d3 space to A-Frame space', function () {
-      var width = 20;
-      var height = 10;
-      el.setAttribute('geo-projection', {
-        width: width,
-        height: height
-      });
-      var geoJson = {type: 'LineString', coordinates: [[0, 0], [width, height]]};
-      var worldTransform = component.getWorldTransform();
-      var path = d3.geoPath().projection(worldTransform);
-      var result = path(geoJson);
-      assert.equal(result, 'M-10,5L10,-5', 'Line coords should start at top left corner and end at bottom right corner');
-    });
-  });
-
-  suite('#getFittedProjection', function () {
-    test('exists as a method on the component', function () {
-      assert.property(component, 'getFittedProjection');
-    });
-    test('returns a projection fits and centers the given geoJson in A-Frame space', function () {
-      var geoJson = {type: 'LineString', coordinates: [[0, 0], [100, 100]]};
-      el.setAttribute('geo-projection', {
-        projection: 'geoIdentity',
-        width: 2,
-        height: 2
-      });
-      var projection = component.getFittedProjection(geoJson);
-      var path = d3.geoPath().projection(projection);
-      var result = path(geoJson);
-      assert.equal(result, 'M-1,1L1,-1', 'Line coords should start at top left corner and end at bottom right corner');
     });
   });
 });
