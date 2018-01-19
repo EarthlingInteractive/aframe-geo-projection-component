@@ -51,6 +51,7 @@
 	if (typeof AFRAME === 'undefined') {
 	  throw new Error('Component attempted to register before AFRAME was available.');
 	}
+	const THREE = AFRAME.THREE;
 
 	/**
 	 * Geo Projection component for A-Frame.
@@ -70,13 +71,24 @@
 	  /**
 	   * Called once when component is attached. Generally for initial setup.
 	   */
-	  init: function () { },
+	  init: function () {
+	    this.loader = new THREE.FileLoader();
+	  },
 
 	  /**
 	   * Called when component is attached and when component data changes.
 	   * Generally modifies the entity based on the data.
 	   */
-	  update: function (oldData) { },
+	  update: function (oldData) {
+	    const src = this.data.src;
+	    if (src && src !== oldData.src) {
+	      this.loader.load(src, this.onSrcLoaded.bind(this));
+	    }
+	  },
+
+	  onSrcLoaded: function () {
+
+	  },
 
 	  /**
 	   * Called when a component is removed (e.g., via removeAttribute).
