@@ -40,7 +40,12 @@ AFRAME.registerComponent('geo-projection', {
     }
   },
 
-  onSrcLoaded: function () {
+  onSrcLoaded: function (text) {
+    const json = JSON.parse(text);
+    this.render(json);
+  },
+
+  render: function (geoJson) {
 
   },
 

@@ -2,7 +2,8 @@
 require('aframe');
 var d3 = require('d3-geo');
 var sinon = require('sinon');
-var sandbox = sinon.createSandbox();require('../index.js');
+var sandbox = sinon.createSandbox();
+require('../index.js');
 var entityFactory = require('./helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
@@ -106,6 +107,15 @@ suite('geo-projection component', function () {
         sinon.assert.calledOnce(component.update);
         sinon.assert.notCalled(fakeLoader.load);
       });
+    });
+  });
+
+  suite('#onSrcLoaded', function () {
+    test('parses the given text into JSON and renders it', function () {
+      sandbox.spy(component, 'render');
+      var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
+      component.onSrcLoaded(text);
+      sinon.assert.calledWithMatch(component.render, { type: 'LineString' });
     });
   });
 
