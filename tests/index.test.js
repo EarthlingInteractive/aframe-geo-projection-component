@@ -1,7 +1,8 @@
 /* global assert, setup, suite, test */
 require('aframe');
 var d3 = require('d3-geo');
-require('../index.js');
+var sinon = require('sinon');
+var sandbox = sinon.createSandbox();require('../index.js');
 var entityFactory = require('./helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
@@ -20,6 +21,10 @@ suite('geo-projection component', function () {
       done();
     });
     el.setAttribute('geo-projection', {});
+  });
+
+  teardown(function () {
+    sandbox.restore();
   });
 
   suite('schema definition', function () {
@@ -59,12 +64,48 @@ suite('geo-projection component', function () {
 
   suite('#init', function () {
     test('initializes a FileLoader', function () {
-      var fakeLoader = sinon.createStubInstance(THREE.FileLoader);
-      var loaderStub = sinon.stub(THREE, 'FileLoader');
+      var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
+      var loaderStub = sandbox.stub(THREE, 'FileLoader');
       loaderStub.returns(fakeLoader);
       component.init();
       sinon.assert.calledWithNew(loaderStub);
       assert.equal(component.loader, fakeLoader);
+    });
+  });
+
+  suite('#update', function() {
+    suite('when the src property changes', function () {
+      test('loads the new src asset', function () {
+        var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
+        var loaderStub = sandbox.stub(THREE, 'FileLoader');
+        loaderStub.returns(fakeLoader);
+        sandbox.spy(component, 'update');
+        sandbox.stub(component.onSrcLoaded, 'bind').callsFake(function () { return component.onSrcLoaded });
+
+        component.init();
+        el.setAttribute('geo-projection', {
+          src: 'assets/test.json'
+        });
+
+        sinon.assert.calledOnce(component.update);
+        sinon.assert.calledWith(fakeLoader.load, 'assets/test.json', component.onSrcLoaded);
+      });
+    });
+    suite('when the src property has not changed', function () {
+      test('does not re-load the src asset', function () {
+        var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
+        var loaderStub = sandbox.stub(THREE, 'FileLoader');
+        loaderStub.returns(fakeLoader);
+        sandbox.spy(component, 'update');
+
+        component.init();
+        el.setAttribute('geo-projection', {
+          width: 2
+        });
+
+        sinon.assert.calledOnce(component.update);
+        sinon.assert.notCalled(fakeLoader.load);
+      });
     });
   });
 

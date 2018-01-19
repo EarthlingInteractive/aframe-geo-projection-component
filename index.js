@@ -34,6 +34,14 @@ AFRAME.registerComponent('geo-projection', {
    * Generally modifies the entity based on the data.
    */
   update: function (oldData) {
+    const src = this.data.src;
+    if (src && src !== oldData.src) {
+      this.loader.load(src, this.onSrcLoaded.bind(this));
+    }
+  },
+
+  onSrcLoaded: function () {
+
   },
 
   /**
