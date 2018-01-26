@@ -43,10 +43,10 @@ suite('renderer', function () {
         });
       });
       suite('a square', function () {
-        test('has four vertices', function () {
+        test('has four pairs of vertices', function () {
           var geometry = renderer.renderGeoJson(squareGeoJson).geometry;
           var position = geometry.getAttribute('position');
-          assert.equal(position.count, 4, 'a square should have 4 vertices');
+          assert.equal(position.count, 8, 'a square should have 8 pairs of vertices');
         });
       });
     });

@@ -1,3 +1,5 @@
+var projectionLib = require('./projection');
+var d3 = require('d3-geo');
 
 function ThreeJSRenderContext(shapePath) {
   this.shapePath = shapePath;
@@ -28,7 +30,7 @@ ThreeJSRenderContext.prototype.toShapes = function toShapes (isCCW) {
 };
 
 ThreeJSRenderContext.prototype.toVertices = function toVertices () {
-  const verticesForShape = [];
+  var verticesForShape = [];
   this.shapePath.subPaths.forEach(function (path) {
     path.curves.forEach(function (curve) {
       if (curve.isLineCurve) {
@@ -50,6 +52,8 @@ ThreeJSRenderContext.prototype.toVertices = function toVertices () {
   return verticesForShape;
 };
 
+var THREE = AFRAME.THREE;
+
 module.exports = {
   /**
    * Takes the input geoJson and renders it as an Object3D.
@@ -58,21 +62,15 @@ module.exports = {
    * @return THREE.Object3D
    */
   renderGeoJson: function (geoJson) {
-    // getFittedProjection using geoJson
-    // create geometry using projection and geoJson
-    // create mesh from geometry and material
+    var projection = projectionLib.getFittedProjection('geoIdentity', geoJson, 10, 10);
+    var shapePath = new THREE.ShapePath();
+    var mapRenderContext = new ThreeJSRenderContext(shapePath);
+    var mapPath = d3.geoPath(projection, mapRenderContext);
+    mapPath(geoJson);
+
     var geometry = new THREE.BufferGeometry();
-    var vertices = new Float32Array( [
-      -1.0, -1.0,  1.0,
-      1.0, -1.0,  1.0,
-      1.0,  1.0,  1.0,
-
-      1.0,  1.0,  1.0,
-      -1.0,  1.0,  1.0,
-      -1.0, -1.0,  1.0
-    ] );
-
-    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+    var vertices = mapRenderContext.toVertices();
+    geometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     return new THREE.LineSegments(geometry);
   },
 
