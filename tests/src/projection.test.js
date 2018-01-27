@@ -27,6 +27,15 @@ suite('projection-related functions', function () {
       var result = path(geoJson);
       assert.equal(result, 'M-10,5L10,-5', 'Line coords should start at top left corner and end at bottom right corner');
     });
+    test('returns a transform that changes scales when the width and height change', function () {
+      var height = 14;
+      var width = 6;
+      var geoJson = {type: 'LineString', coordinates: [[0, 0], [width, height]]};
+      var worldTransform = projectionLib.getWorldTransform(height, width);
+      var path = d3.geoPath().projection(worldTransform);
+      var result = path(geoJson);
+      assert.equal(result, 'M-3,7L3,-7', 'Line coords should start at top left corner and end at bottom right corner');
+    });
   });
 
   suite('#getFittedProjection', function () {
@@ -39,6 +48,16 @@ suite('projection-related functions', function () {
       var path = d3.geoPath().projection(projection);
       var result = path(geoJson);
       assert.equal(result, 'M-1,1L1,-1', 'Line coords should start at top left corner and end at bottom right corner');
+    });
+    test('returns a projection that handles when height and width are different', function () {
+      var geoJson = {type: 'LineString', coordinates: [[0, 0], [100, 100]]};
+      var projectionName = 'geoIdentity';
+      var width = 10;
+      var height= 20;
+      var projection = projectionLib.getFittedProjection(projectionName, geoJson, height, width);
+      var path = d3.geoPath().projection(projection);
+      var result = path(geoJson);
+      assert.equal(result, 'M-5,5L5,-5', 'Line should be centered and scaled but aspect ratio should remain constant');
     });
   });
 });

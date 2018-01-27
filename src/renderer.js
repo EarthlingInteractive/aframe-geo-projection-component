@@ -58,11 +58,13 @@ module.exports = {
   /**
    * Takes the input geoJson and renders it as an Object3D.
    *
-   * @param geoJson
+   * @param geoJson the geoJson object to render
+   * @param height the height in A-Frame units
+   * @param width the width in A-Frame units
    * @return THREE.Object3D
    */
-  renderGeoJson: function (geoJson) {
-    var projection = projectionLib.getFittedProjection('geoIdentity', geoJson, 10, 10);
+  renderGeoJson: function (geoJson, height, width) {
+    var projection = projectionLib.getFittedProjection('geoIdentity', geoJson, height, width);
     var shapePath = new THREE.ShapePath();
     var mapRenderContext = new ThreeJSRenderContext(shapePath);
     var mapPath = d3.geoPath(projection, mapRenderContext);

@@ -19,34 +19,58 @@ var squareGeoJson = {
 suite('renderer', function () {
   suite('#renderGeoJson', function () {
     test('returns an Object3D', function () {
-      var result = renderer.renderGeoJson(lineGeoJson);
+      var result = renderer.renderGeoJson(lineGeoJson, 10, 10);
       assert.instanceOf(result, THREE.Object3D, 'result is an instance of Object3D');
     });
     test('renders the output as LineSegments', function () {
-      var result = renderer.renderGeoJson(lineGeoJson);
+      var result = renderer.renderGeoJson(lineGeoJson, 10, 10);
       assert.instanceOf(result, THREE.LineSegments, 'result is an instance of LineSegments');
     });
     test('the output should have a BufferGeometry', function () {
-      var result = renderer.renderGeoJson(lineGeoJson);
+      var result = renderer.renderGeoJson(lineGeoJson, 10, 10);
       assert.instanceOf(result.geometry, THREE.BufferGeometry, 'result has a BufferGeometry set');
     });
     test('the output should have a Material', function () {
-      var result = renderer.renderGeoJson(lineGeoJson);
+      var result = renderer.renderGeoJson(lineGeoJson, 10, 10);
       assert.instanceOf(result.material, THREE.Material, 'result has a Material set');
     });
     suite('the BufferGeometry in the output should have vertices based on the input geoJson', function () {
       suite('a diagonal line', function () {
         test('has two vertices', function () {
-          var geometry = renderer.renderGeoJson(lineGeoJson).geometry;
+          var geometry = renderer.renderGeoJson(lineGeoJson, 10, 10).geometry;
           var position = geometry.getAttribute('position');
           assert.equal(position.count, 2, 'a line should have 2 vertices');
+        });
+        suite('has vertices that scale and center based on the given height and width', function () {
+          test('for width = 10, height = 10', function () {
+            var geometry = renderer.renderGeoJson(lineGeoJson, 10, 10).geometry;
+            var position = geometry.getAttribute('position');
+            assert.equal(position.array.toString(), '-5,5,0,5,-5,0');
+          });
+          test('for height = 20, width = 30', function () {
+            var geometry = renderer.renderGeoJson(lineGeoJson, 20, 30).geometry;
+            var position = geometry.getAttribute('position');
+            assert.equal(position.array.toString(), '-10,10,0,10,-10,0');
+          });
         });
       });
       suite('a square', function () {
         test('has four pairs of vertices', function () {
-          var geometry = renderer.renderGeoJson(squareGeoJson).geometry;
+          var geometry = renderer.renderGeoJson(squareGeoJson, 10, 10).geometry;
           var position = geometry.getAttribute('position');
           assert.equal(position.count, 8, 'a square should have 8 pairs of vertices');
+        });
+        suite('has vertices that scale and center based on the given height and width', function () {
+          test('for width = 10, height = 10', function () {
+            var geometry = renderer.renderGeoJson(squareGeoJson, 10, 10).geometry;
+            var position = geometry.getAttribute('position');
+            assert.equal(position.array.toString(), '-5,5,0,-5,-5,0,-5,-5,0,5,-5,0,5,-5,0,5,5,0,5,5,0,-5,5,0');
+          });
+          test('for height = 20, width = 30', function () {
+            var geometry = renderer.renderGeoJson(squareGeoJson, 20, 30).geometry;
+            var position = geometry.getAttribute('position');
+            assert.equal(position.array.toString(), '-10,10,0,-10,-10,0,-10,-10,0,10,-10,0,10,-10,0,10,10,0,10,10,0,-10,10,0');
+          });
         });
       });
     });
