@@ -4,13 +4,24 @@
     <meta charset="utf-8">
     <title>A-Frame Geo Projection Component - Basic</title>
     <meta name="description" content="Basic example for Geo Projection component."></meta>
-    <script src="https://aframe.io/releases/0.6.0/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
     <script src="../../dist/aframe-geo-projection-component.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component@1.0.0/dist/aframe-environment-component.min.js"></script>
   </head>
   <body>
-    <a-scene environment="preset: forest">
-      <a-entity geo-projection=""></a-entity>
+    <a-scene>
+      <a-assets>
+        <a-asset-item id="json-world" src="https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson" />
+      </a-assets>
+
+      <a-entity rotation="-90 0 0"
+                geo-projection="
+                  src: #json-world;
+                  projection: geoStereographic;
+                  height: 10;
+                  width: 20;"
+      >
+      </a-entity>
     </a-scene>
 
     <!-- GitHub Corner. -->
