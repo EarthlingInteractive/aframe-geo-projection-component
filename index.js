@@ -1,12 +1,11 @@
 /* global AFRAME */
 
-var d3 = Object.assign({}, require('d3-scale'), require('d3-geo'), require('d3-geo-projection'));
-var projectionLib = require('./src/projection');
+var renderer = require('./src/renderer');
 
 if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
 }
-const THREE = AFRAME.THREE;
+var THREE = AFRAME.THREE;
 
 /**
  * Geo Projection component for A-Frame.
@@ -35,19 +34,20 @@ AFRAME.registerComponent('geo-projection', {
    * Generally modifies the entity based on the data.
    */
   update: function (oldData) {
-    const src = this.data.src;
+    var src = this.data.src;
     if (src && src !== oldData.src) {
       this.loader.load(src, this.onSrcLoaded.bind(this));
     }
   },
 
   onSrcLoaded: function (text) {
-    const json = JSON.parse(text);
+    var json = JSON.parse(text);
     this.render(json);
   },
 
   render: function (geoJson) {
-
+    var object3D = renderer.renderGeoJson(geoJson, this.data.projection, this.data.height, this.data.width);
+    this.el.setObject3D('map', object3D);
   },
 
   /**

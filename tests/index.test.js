@@ -3,6 +3,7 @@ require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
 require('../index.js');
+var renderer = require('../src/renderer');
 var entityFactory = require('./helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
@@ -115,6 +116,26 @@ suite('geo-projection component', function () {
       var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
       component.onSrcLoaded(text);
       sinon.assert.calledWithMatch(component.render, { type: 'LineString' });
+    });
+  });
+
+  suite('#render', function () {
+    test('sets an Object3D on the component', function () {
+      var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
+      component.render(geoJson);
+      var object3D = component.el.getObject3D('map');
+      assert.instanceOf(object3D, THREE.Object3D);
+    });
+    test('passes the correct parameters to the renderer', function () {
+      var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
+      el.setAttribute('geo-projection', {
+        projection: 'geoStereographic',
+        width: 2,
+        height: 3
+      });
+      sandbox.spy(renderer, 'renderGeoJson');
+      component.render(geoJson);
+      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, 'geoStereographic', 3, 2);
     });
   });
 });
