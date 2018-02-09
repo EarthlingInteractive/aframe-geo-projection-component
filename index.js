@@ -20,6 +20,10 @@ AFRAME.registerComponent('geo-projection', {
     projection: {
       default: 'geoIdentity'
     },
+    meshType: {
+      oneOf: ['line', 'shape'],
+      default: 'line'
+    },
     width: {default: 1},
     height: {default: 1}
   },
@@ -50,6 +54,7 @@ AFRAME.registerComponent('geo-projection', {
   render: function (geoJson) {
     var renderOptions = {
       projectionName: this.data.projection,
+      meshType: this.data.meshType,
       height: this.data.height,
       width: this.data.width
     };

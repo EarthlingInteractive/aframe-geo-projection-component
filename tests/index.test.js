@@ -61,6 +61,14 @@ suite('geo-projection component', function () {
         assert.propertyVal(component.data, 'projection', 'geoIdentity');
       });
     });
+    suite('meshType property', function () {
+      test('exists', function () {
+        assert.property(component.data, 'meshType');
+      });
+      test('defaults to line', function () {
+        assert.propertyVal(component.data, 'meshType', 'line');
+      });
+    });
   });
 
   suite('dependencies', function () {
@@ -143,17 +151,19 @@ suite('geo-projection component', function () {
       var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
       el.setAttribute('geo-projection', {
         projection: 'geoStereographic',
+        meshType: 'line',
         width: 2,
         height: 3
       });
       sandbox.spy(renderer, 'renderGeoJson');
       component.render(geoJson);
-      var options = {
+      var expectedOptions = {
         projectionName: 'geoStereographic',
+        meshType: 'line',
         width: 2,
         height: 3
       };
-      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, options);
+      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, expectedOptions);
     });
   });
 });

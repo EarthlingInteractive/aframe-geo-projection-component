@@ -17,6 +17,7 @@ var squareGeoJson = {
 };
 var renderOptions = {
   projectionName: 'geoIdentity',
+  meshType: 'line',
   height: 10,
   width: 10
 };
@@ -27,9 +28,36 @@ suite('renderer', function () {
       var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
       assert.instanceOf(result, THREE.Object3D, 'result is an instance of Object3D');
     });
-    test('renders the output as LineSegments', function () {
-      var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
-      assert.instanceOf(result, THREE.LineSegments, 'result is an instance of LineSegments');
+    suite('when the meshType is line', function () {
+      test('renders the output as LineSegments', function () {
+        var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
+        assert.instanceOf(result, THREE.LineSegments, 'result is an instance of LineSegments');
+      });
+    });
+    suite('when the meshType is shape', function () {
+      test('renders the output as a Mesh', function () {
+        var otherRenderOptions = {
+          projectionName: 'geoIdentity',
+          meshType: 'shape',
+          height: 10,
+          width: 10
+        };
+        var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+        assert.instanceOf(result, THREE.Mesh, 'result is an instance of Mesh');
+      });
+    });
+    suite('when the meshType is invalid', function () {
+      test('throws an error', function () {
+        var badRenderOptions = {
+          projectionName: 'geoIdentity',
+          meshType: 'blah',
+          height: 10,
+          width: 10
+        };
+        assert.throws(
+          function () { renderer.renderGeoJson(squareGeoJson, badRenderOptions); },
+          'Unsupported meshType: blah');
+      });
     });
     test('the output should have a BufferGeometry', function () {
       var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
@@ -56,6 +84,7 @@ suite('renderer', function () {
           test('for height = 20, width = 30', function () {
             var otherRenderOptions = {
               projectionName: 'geoIdentity',
+              meshType: 'line',
               height: 20,
               width: 30
             };
@@ -80,6 +109,7 @@ suite('renderer', function () {
           test('for height = 20, width = 30', function () {
             var otherRenderOptions = {
               projectionName: 'geoIdentity',
+              meshType: 'line',
               height: 20,
               width: 30
             };
@@ -98,6 +128,7 @@ suite('renderer', function () {
         };
         var otherRenderOptions = {
           projectionName: 'geoStereographic',
+          meshType: 'line',
           height: 10,
           width: 10
         };
