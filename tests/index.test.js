@@ -168,4 +168,14 @@ suite('geo-projection component', function () {
       sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match.has('material', sinon.match.instanceOf(THREE.MeshBasicMaterial)));
     });
   });
+
+  suite('#remove', function () {
+    test('removes the Object3D set on the component', function () {
+      var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
+      component.render(geoJson);
+      component.remove();
+      var object3D = component.el.getObject3D('map');
+      assert.isUndefined(object3D);
+    });
+  });
 });

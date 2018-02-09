@@ -69,5 +69,10 @@ AFRAME.registerComponent('geo-projection', {
    * Called when a component is removed (e.g., via removeAttribute).
    * Generally undoes all modifications to the entity.
    */
-  remove: function () { }
+  remove: function () {
+    var obj = this.el.getObject3D('map');
+    if (obj) {
+      this.el.removeObject3D('map');
+    }
+  }
 });
