@@ -33,6 +33,17 @@ suite('renderer', function () {
         var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
         assert.instanceOf(result, THREE.LineSegments, 'result is an instance of LineSegments');
       });
+      test('the output should use the given Material', function () {
+        var otherRenderOptions = {
+          projectionName: 'geoIdentity',
+          meshType: 'line',
+          material: new THREE.LineDashedMaterial(),
+          height: 10,
+          width: 10
+        };
+        var result = renderer.renderGeoJson(lineGeoJson, otherRenderOptions);
+        assert.instanceOf(result.material, THREE.LineDashedMaterial, 'result has the correct Material set');
+      });
     });
     suite('when the meshType is shape', function () {
       test('renders the output as a Mesh', function () {
@@ -44,6 +55,17 @@ suite('renderer', function () {
         };
         var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
         assert.instanceOf(result, THREE.Mesh, 'result is an instance of Mesh');
+      });
+      test('the output should use the given Material', function () {
+        var otherRenderOptions = {
+          projectionName: 'geoIdentity',
+          meshType: 'shape',
+          material: new THREE.MeshLambertMaterial(),
+          height: 10,
+          width: 10
+        };
+        var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+        assert.instanceOf(result.material, THREE.MeshLambertMaterial, 'result has the correct Material set');
       });
     });
     suite('when the meshType is invalid', function () {

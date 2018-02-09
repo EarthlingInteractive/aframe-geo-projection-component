@@ -149,6 +149,7 @@ suite('geo-projection component', function () {
     });
     test('passes the correct parameters to the renderer', function () {
       var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
+      el.setAttribute('material', { shader: 'flat' });
       el.setAttribute('geo-projection', {
         projection: 'geoStereographic',
         meshType: 'line',
@@ -157,13 +158,14 @@ suite('geo-projection component', function () {
       });
       sandbox.spy(renderer, 'renderGeoJson');
       component.render(geoJson);
-      var expectedOptions = {
+      var expectedBaseOptions = {
         projectionName: 'geoStereographic',
         meshType: 'line',
         width: 2,
         height: 3
       };
-      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, expectedOptions);
+      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match(expectedBaseOptions));
+      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match.has('material', sinon.match.instanceOf(THREE.MeshBasicMaterial)));
     });
   });
 });

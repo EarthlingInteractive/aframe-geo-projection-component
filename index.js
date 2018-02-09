@@ -53,9 +53,11 @@ AFRAME.registerComponent('geo-projection', {
   },
 
   render: function (geoJson) {
+    var material = this.el.components.material.material;
     var renderOptions = {
       projectionName: this.data.projection,
       meshType: this.data.meshType,
+      material: material,
       height: this.data.height,
       width: this.data.width
     };

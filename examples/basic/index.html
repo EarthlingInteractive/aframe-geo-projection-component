@@ -14,7 +14,8 @@
         <a-asset-item id="json-world" src="https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson" />
       </a-assets>
 
-      <a-entity rotation="-90 0 0"
+      <a-entity id="steve" rotation="-90 0 0"
+                material="shader: linebasic; color: red;"
                 geo-projection="
                   src: #json-world;
                   projection: geoStereographic;
