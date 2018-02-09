@@ -17,6 +17,36 @@ For [A-Frame](https://aframe.io).
 | projection | the name of a projection from d3-geo or d3-geo-projection | geoIdentity |
 | meshType | how to render the map; supported types are: "line" for line segements or "shape" for flat shapes | line |
 
+It is also required to set a material on the component.  For a meshType of "shape", you can use the standard (default) shader
+or the flat shader.
+
+#### LineBasicMaterial shader API
+For a meshType of "line", this library provides a customer shader for a LineBasicMaterial.  To use it,
+set the shader to `linebasic`
+```html
+<a-entity material="shader: linebasic; color: red;" ...></a-entity>
+```
+
+The following configurable properties are provided:
+
+| Property | Description | Default Value |
+| -------- | ----------- | ------------- |
+| blending | Which blending to use when displaying objects with this material. | THREE.NormalBlending |
+| color | Color of the material. | #000 |
+| depthTest | Whether to have depth test enabled when rendering this material. | true |
+| depthFunc | Which depth function to use. | THREE.LessEqualDepth |
+| depthWrite | Whether rendering this material has any effect on the depth buffer. | true |
+| fog | Whether the material is affected by fog. | false |
+| linewidth | Controls line thickness. | 1 |
+| linecap | Define appearance of line ends. Possible values are 'butt', 'round' and 'square'. | round |
+| linejoin | Define appearance of line joints. Possible values are 'round', 'bevel' and 'miter'. | round |
+| opacity | Float in the range of 0.0 - 1.0 indicating how transparent the material is. A value of 0.0 indicates fully transparent, 1.0 is fully opaque. | 1 |
+| side | Defines which side of faces will be rendered - front, back or both. | THREE.FrontSide |
+| transparent | Defines whether this material is transparent. This has an effect on rendering as transparent objects need special treatment and are rendered after non-transparent objects. When set to true, the extent to which the material is transparent is controlled by setting its opacity property.| false |
+| vertexColors | Defines whether vertex coloring is used. | THREE.NoColors |
+| visible | Defines whether this material is visible. | true |
+
+
 ### Installation
 
 #### Browser
@@ -38,10 +68,12 @@ Install and use by directly including the [browser files](dist):
 
     <a-entity geo-projection="
                 src: #json-world;
+                meshType: line;
                 projection: geoStereographic;
                 height: 10;
                 width: 20;
               "
+              material="shader: linebasic; color: red;"
     ></a-entity>
   </a-scene>
 </body>

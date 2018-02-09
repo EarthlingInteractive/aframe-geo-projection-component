@@ -11,7 +11,6 @@ AFRAME.registerShader('linebasic', {
     linewidth:      {default: 1},
     linecap:        {default: 'round'},
     linejoin:       {default: 'round'},
-    needsUpdate:    {default: true},
     opacity:        {default: 1},
     side:           {default: THREE.FrontSide},
     transparent:    {default: false},
