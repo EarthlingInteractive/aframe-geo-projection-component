@@ -35,6 +35,7 @@ module.exports = {
         lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         return new THREE.LineSegments(lineGeometry);
       case 'shape':
+        // TODO: pass isCCW as an option
         const shapes = mapRenderContext.toShapes();
         var shapeGeometry = new THREE.ShapeBufferGeometry(shapes);
         return new THREE.Mesh(shapeGeometry);
