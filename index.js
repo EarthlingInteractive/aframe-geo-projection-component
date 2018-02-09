@@ -22,7 +22,7 @@ AFRAME.registerComponent('geo-projection', {
       default: 'geoIdentity'
     },
     meshType: {
-      oneOf: ['line', 'shape'],
+      oneOf: ['line', 'shape', 'extrude'],
       default: 'line'
     },
     width: {default: 1},

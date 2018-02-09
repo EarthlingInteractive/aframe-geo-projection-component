@@ -28,57 +28,83 @@ suite('renderer', function () {
       var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
       assert.instanceOf(result, THREE.Object3D, 'result is an instance of Object3D');
     });
-    suite('when the meshType is line', function () {
-      test('renders the output as LineSegments', function () {
-        var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
-        assert.instanceOf(result, THREE.LineSegments, 'result is an instance of LineSegments');
+    suite('meshType', function () {
+      suite('when the meshType is line', function () {
+        test('renders the output as LineSegments', function () {
+          var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
+          assert.instanceOf(result, THREE.LineSegments, 'result is an instance of LineSegments');
+        });
+        test('the output should use the given Material', function () {
+          var otherRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'line',
+            material: new THREE.LineDashedMaterial(),
+            height: 10,
+            width: 10
+          };
+          var result = renderer.renderGeoJson(lineGeoJson, otherRenderOptions);
+          assert.instanceOf(result.material, THREE.LineDashedMaterial, 'result has the correct Material set');
+        });
       });
-      test('the output should use the given Material', function () {
-        var otherRenderOptions = {
-          projectionName: 'geoIdentity',
-          meshType: 'line',
-          material: new THREE.LineDashedMaterial(),
-          height: 10,
-          width: 10
-        };
-        var result = renderer.renderGeoJson(lineGeoJson, otherRenderOptions);
-        assert.instanceOf(result.material, THREE.LineDashedMaterial, 'result has the correct Material set');
+      suite('when the meshType is shape', function () {
+        test('renders the output as a Mesh', function () {
+          var otherRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'shape',
+            height: 10,
+            width: 10
+          };
+          var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+          assert.instanceOf(result, THREE.Mesh, 'result is an instance of Mesh');
+        });
+        test('the output should use the given Material', function () {
+          var otherRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'shape',
+            material: new THREE.MeshLambertMaterial(),
+            height: 10,
+            width: 10
+          };
+          var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+          assert.instanceOf(result.material, THREE.MeshLambertMaterial, 'result has the correct Material set');
+        });
       });
-    });
-    suite('when the meshType is shape', function () {
-      test('renders the output as a Mesh', function () {
-        var otherRenderOptions = {
-          projectionName: 'geoIdentity',
-          meshType: 'shape',
-          height: 10,
-          width: 10
-        };
-        var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
-        assert.instanceOf(result, THREE.Mesh, 'result is an instance of Mesh');
+      suite('when the meshType is extrude', function () {
+        test('renders the output as a Mesh with an ExtrudeBufferGeometry', function () {
+          var otherRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'extrude',
+            height: 10,
+            width: 10
+          };
+          var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+          assert.instanceOf(result, THREE.Mesh, 'result is an instance of Mesh');
+          assert.instanceOf(result.geometry, THREE.ExtrudeBufferGeometry, 'result geometry is an instance of ExtrudeBufferGeometry');
+        });
+        test('the output should use the given Material', function () {
+          var otherRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'extrude',
+            material: new THREE.MeshLambertMaterial(),
+            height: 10,
+            width: 10
+          };
+          var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+          assert.instanceOf(result.material, THREE.MeshLambertMaterial, 'result has the correct Material set');
+        });
       });
-      test('the output should use the given Material', function () {
-        var otherRenderOptions = {
-          projectionName: 'geoIdentity',
-          meshType: 'shape',
-          material: new THREE.MeshLambertMaterial(),
-          height: 10,
-          width: 10
-        };
-        var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
-        assert.instanceOf(result.material, THREE.MeshLambertMaterial, 'result has the correct Material set');
-      });
-    });
-    suite('when the meshType is invalid', function () {
-      test('throws an error', function () {
-        var badRenderOptions = {
-          projectionName: 'geoIdentity',
-          meshType: 'blah',
-          height: 10,
-          width: 10
-        };
-        assert.throws(
-          function () { renderer.renderGeoJson(squareGeoJson, badRenderOptions); },
-          'Unsupported meshType: blah');
+      suite('when the meshType is invalid', function () {
+        test('throws an error', function () {
+          var badRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'blah',
+            height: 10,
+            width: 10
+          };
+          assert.throws(
+            function () { renderer.renderGeoJson(squareGeoJson, badRenderOptions); },
+            'Unsupported meshType: blah');
+        });
       });
     });
     test('the output should have a BufferGeometry', function () {

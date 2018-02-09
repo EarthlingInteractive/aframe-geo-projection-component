@@ -15,9 +15,9 @@ For [A-Frame](https://aframe.io).
 | width      | width of the plane on which to project the map | 1              |
 | height      | height of the plane on which to project the map | 1              |
 | projection | the name of a projection from d3-geo or d3-geo-projection | geoIdentity |
-| meshType | how to render the map; supported types are: "line" for line segements or "shape" for flat shapes | line |
+| meshType | how to render the map; supported types are: "line" for line segments, "shape" for flat shapes, and "extrude" for shapes extruded into 3D | line |
 
-It is also required to set a material on the component.  For a meshType of "shape", you can use the standard (default) shader
+Note that it is also required to set a material on the component.  For a meshType of "shape", you can use the standard (default) shader
 or the flat shader.
 
 #### LineBasicMaterial shader API

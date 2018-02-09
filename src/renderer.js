@@ -41,6 +41,14 @@ module.exports = {
         const shapes = mapRenderContext.toShapes();
         var shapeGeometry = new THREE.ShapeBufferGeometry(shapes);
         return new THREE.Mesh(shapeGeometry, material);
+      case 'extrude':
+        const extrudeSettings = {
+          amount: 1,
+          bevelEnabled: false
+        };
+        const extShapes = mapRenderContext.toShapes();
+        var extGeometry = new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
+        return new THREE.Mesh(extGeometry, material);
       default:
         throw new Error('Unsupported meshType: ' + meshType);
     }
