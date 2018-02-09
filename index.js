@@ -1,5 +1,6 @@
 /* global AFRAME */
 
+require('./src/lineBasicMaterial');
 var renderer = require('./src/renderer');
 
 if (typeof AFRAME === 'undefined') {
