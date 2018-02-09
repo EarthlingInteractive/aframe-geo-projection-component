@@ -11,6 +11,8 @@ var THREE = AFRAME.THREE;
  * Geo Projection component for A-Frame.
  */
 AFRAME.registerComponent('geo-projection', {
+  dependencies: ['material'],
+
   schema: {
     src: {
       type: 'asset'

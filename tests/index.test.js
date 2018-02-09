@@ -63,6 +63,19 @@ suite('geo-projection component', function () {
     });
   });
 
+  suite('dependencies', function () {
+    suite('material', function () {
+      test('can access a material defined on the component', function () {
+        el.setAttribute('material', { color: 'red' });
+        var material = el.components.material.material;
+        assert.instanceOf(material, THREE.Material, 'is an instance of Material');
+        assert.propertyVal(material.color, 'r', 1);
+        assert.propertyVal(material.color, 'g', 0);
+        assert.propertyVal(material.color, 'b', 0);
+      });
+    });
+  });
+
   suite('#init', function () {
     test('initializes a FileLoader', function () {
       var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
