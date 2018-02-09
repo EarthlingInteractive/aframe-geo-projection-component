@@ -148,7 +148,12 @@ suite('geo-projection component', function () {
       });
       sandbox.spy(renderer, 'renderGeoJson');
       component.render(geoJson);
-      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, 'geoStereographic', 3, 2);
+      var options = {
+        projectionName: 'geoStereographic',
+        width: 2,
+        height: 3
+      };
+      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, options);
     });
   });
 });

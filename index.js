@@ -48,7 +48,12 @@ AFRAME.registerComponent('geo-projection', {
   },
 
   render: function (geoJson) {
-    var object3D = renderer.renderGeoJson(geoJson, this.data.projection, this.data.height, this.data.width);
+    var renderOptions = {
+      projectionName: this.data.projection,
+      height: this.data.height,
+      width: this.data.width
+    };
+    var object3D = renderer.renderGeoJson(geoJson, renderOptions);
     this.el.setObject3D('map', object3D);
   },
 
