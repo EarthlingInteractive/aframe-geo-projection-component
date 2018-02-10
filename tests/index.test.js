@@ -53,6 +53,14 @@ suite('geo-projection component', function () {
         assert.propertyVal(component.data, 'src', '');
       });
     });
+    suite('isCCW property', function () {
+      test('exists', function () {
+        assert.property(component.data, 'isCCW');
+      });
+      test('defaults to false', function () {
+        assert.propertyVal(component.data, 'isCCW', false);
+      });
+    });
     suite('projection property', function () {
       test('exists', function () {
         assert.property(component.data, 'projection');
@@ -154,7 +162,8 @@ suite('geo-projection component', function () {
         projection: 'geoStereographic',
         meshType: 'line',
         width: 2,
-        height: 3
+        height: 3,
+        isCCW: true
       });
       sandbox.spy(renderer, 'renderGeoJson');
       component.render(geoJson);
@@ -162,7 +171,8 @@ suite('geo-projection component', function () {
         projectionName: 'geoStereographic',
         meshType: 'line',
         width: 2,
-        height: 3
+        height: 3,
+        isCCW: true
       };
       sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match(expectedBaseOptions));
       sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match.has('material', sinon.match.instanceOf(THREE.MeshBasicMaterial)));

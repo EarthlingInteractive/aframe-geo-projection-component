@@ -15,6 +15,7 @@ module.exports = {
    * @param renderOptions.material the THREE.Material to use in the resulting Object3D
    * @param renderOptions.height the height in A-Frame units
    * @param renderOptions.width the width in A-Frame units
+   * @param renderOptions.isCCW true if shapes are defined counter-clockwise and holes defined clockwise; false for the reverse
    * @return THREE.Object3D
    */
   renderGeoJson: function (geoJson, renderOptions) {
@@ -23,6 +24,7 @@ module.exports = {
     var width = renderOptions.width;
     var meshType = renderOptions.meshType;
     var material = renderOptions.material;
+    var isCCW = renderOptions.isCCW;
 
     var projection = projectionLib.getFittedProjection(projectionName, geoJson, height, width);
     var shapePath = new THREE.ShapePath();
@@ -38,7 +40,7 @@ module.exports = {
         return new THREE.LineSegments(lineGeometry, material);
       case 'shape':
         // TODO: pass isCCW as an option
-        const shapes = mapRenderContext.toShapes();
+        const shapes = mapRenderContext.toShapes(isCCW);
         var shapeGeometry = new THREE.ShapeBufferGeometry(shapes);
         return new THREE.Mesh(shapeGeometry, material);
       case 'extrude':
@@ -46,7 +48,7 @@ module.exports = {
           amount: 1,
           bevelEnabled: false
         };
-        const extShapes = mapRenderContext.toShapes();
+        const extShapes = mapRenderContext.toShapes(isCCW);
         var extGeometry = new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
         return new THREE.Mesh(extGeometry, material);
       default:

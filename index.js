@@ -18,6 +18,10 @@ AFRAME.registerComponent('geo-projection', {
     src: {
       type: 'asset'
     },
+    isCCW: {
+      type: 'boolean',
+      default: false
+    },
     projection: {
       default: 'geoIdentity'
     },
@@ -59,7 +63,8 @@ AFRAME.registerComponent('geo-projection', {
       meshType: this.data.meshType,
       material: material,
       height: this.data.height,
-      width: this.data.width
+      width: this.data.width,
+      isCCW: this.data.isCCW
     };
     var object3D = renderer.renderGeoJson(geoJson, renderOptions);
     this.el.setObject3D('map', object3D);

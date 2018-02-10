@@ -1,5 +1,8 @@
 /* global assert, setup, suite, test */
 var renderer = require('../../src/renderer');
+var ThreeJSRenderContext = require('../../src/renderContext').ThreeJSRenderContext;
+var sinon = require('sinon');
+var sandbox = sinon.createSandbox();
 
 var lineGeoJson = {type: 'LineString', coordinates: [[0, 0], [100, 100]]};
 var squareGeoJson = {
@@ -23,6 +26,10 @@ var renderOptions = {
 };
 
 suite('renderer', function () {
+  teardown(function () {
+    sandbox.restore();
+  });
+
   suite('#renderGeoJson', function () {
     test('returns an Object3D', function () {
       var result = renderer.renderGeoJson(lineGeoJson, renderOptions);
@@ -68,6 +75,19 @@ suite('renderer', function () {
           var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
           assert.instanceOf(result.material, THREE.MeshLambertMaterial, 'result has the correct Material set');
         });
+        test('passes the isCCW value to the renderContext', function () {
+          var otherRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'shape',
+            material: new THREE.MeshLambertMaterial(),
+            height: 10,
+            width: 10,
+            isCCW: true
+          };
+          var toShapesStub = sandbox.stub(ThreeJSRenderContext.prototype, 'toShapes').callThrough();
+          renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+          sinon.assert.calledWith(toShapesStub, true);
+        });
       });
       suite('when the meshType is extrude', function () {
         test('renders the output as a Mesh with an ExtrudeBufferGeometry', function () {
@@ -91,6 +111,19 @@ suite('renderer', function () {
           };
           var result = renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
           assert.instanceOf(result.material, THREE.MeshLambertMaterial, 'result has the correct Material set');
+        });
+        test('passes the isCCW value to the renderContext', function () {
+          var otherRenderOptions = {
+            projectionName: 'geoIdentity',
+            meshType: 'extrude',
+            material: new THREE.MeshLambertMaterial(),
+            height: 10,
+            width: 10,
+            isCCW: true
+          };
+          var toShapesStub = sandbox.stub(ThreeJSRenderContext.prototype, 'toShapes').callThrough();
+          renderer.renderGeoJson(squareGeoJson, otherRenderOptions);
+          sinon.assert.calledWith(toShapesStub, true);
         });
       });
       suite('when the meshType is invalid', function () {
