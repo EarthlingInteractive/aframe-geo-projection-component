@@ -61,6 +61,7 @@
     "sinon": "^4.1.6",
     "sinon-chai": "^2.14.0",
     "snazzy": "^4.0.0",
+    "topojson-client": "^3.0.0",
     "webpack": "^1.13.0"
   },
   "semistandard": {

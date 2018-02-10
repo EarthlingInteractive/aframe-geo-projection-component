@@ -53,6 +53,22 @@ suite('geo-projection component', function () {
         assert.propertyVal(component.data, 'src', '');
       });
     });
+    suite('srcType property', function () {
+      test('exists', function () {
+        assert.property(component.data, 'srcType');
+      });
+      test('defaults to geojson', function () {
+        assert.propertyVal(component.data, 'srcType', 'geojson');
+      });
+    });
+    suite('topologyObject property', function () {
+      test('exists', function () {
+        assert.property(component.data, 'topologyObject');
+      });
+      test('defaults to empty string', function () {
+        assert.propertyVal(component.data, 'topologyObject', '');
+      });
+    });
     suite('isCCW property', function () {
       test('exists', function () {
         assert.property(component.data, 'isCCW');
@@ -140,11 +156,46 @@ suite('geo-projection component', function () {
   });
 
   suite('#onSrcLoaded', function () {
-    test('parses the given text into JSON and renders it', function () {
-      sandbox.spy(component, 'render');
-      var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
-      component.onSrcLoaded(text);
-      sinon.assert.calledWithMatch(component.render, { type: 'LineString' });
+    suite('when srcType is geojson', function () {
+      test('parses the given text into JSON and renders it', function () {
+        el.setAttribute('geo-projection', {
+          srcType: 'geojson'
+        });
+
+        sandbox.spy(component, 'render');
+        var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
+        component.onSrcLoaded(text);
+
+        sinon.assert.calledWithMatch(component.render, { type: 'LineString' });
+      });
+    });
+    suite('when srcType is topojson', function () {
+      var topoJson = "{\"type\":\"Topology\",\"transform\":{\"scale\":[0.036003600360036005,0.017361589674592462],\"translate\":[-180,-89.99892578124998]},\"objects\":{\"aruba\":{\"type\":\"Polygon\",\"arcs\":[[0]],\"id\":533},\"line\":{\"type\":\"LineString\",\"arcs\":[[1]],\"id\":534}},\"arcs\":[[[3058,5901],[0,-2],[-2,1],[-1,3],[-2,3],[0,3],[1,1],[1,-3],[2,-5],[1,-1]],[[3058,5901],[0,1]]]}";
+      suite('and topologyObject is defined', function () {
+        test('renders the given topologyObject', function () {
+          el.setAttribute('geo-projection', {
+            srcType: 'topojson',
+            topologyObject: 'line'
+          });
+
+          sandbox.spy(component, 'render');
+          component.onSrcLoaded(topoJson);
+
+          sinon.assert.calledWithMatch(component.render, { geometry: { type: 'LineString' } });
+        });
+      });
+      suite('and topologyObject is not defined', function () {
+        test('chooses the first object as the feature', function () {
+          el.setAttribute('geo-projection', {
+            srcType: 'topojson'
+          });
+
+          sandbox.spy(component, 'render');
+          component.onSrcLoaded(topoJson);
+
+          sinon.assert.calledWithMatch(component.render, { geometry: { type: 'Polygon' } });
+        });
+      });
     });
   });
 

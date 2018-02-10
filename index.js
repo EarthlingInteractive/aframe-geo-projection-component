@@ -2,6 +2,7 @@
 
 require('./src/lineBasicMaterial');
 var renderer = require('./src/renderer');
+var topojson = require('topojson-client');
 
 if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
@@ -17,6 +18,13 @@ AFRAME.registerComponent('geo-projection', {
   schema: {
     src: {
       type: 'asset'
+    },
+    srcType: {
+      oneOf: ['geojson', 'topojson'],
+      default: 'geojson'
+    },
+    topologyObject: {
+      type: 'string'
     },
     isCCW: {
       type: 'boolean',
@@ -53,7 +61,17 @@ AFRAME.registerComponent('geo-projection', {
 
   onSrcLoaded: function (text) {
     var json = JSON.parse(text);
-    this.render(json);
+
+    var geoJson = json;
+    if (this.data.srcType === 'topojson') {
+      var topologyObjectName = this.data.topologyObject;
+      if (!this.data.topologyObject) {
+        topologyObjectName = Object.keys(json.objects)[0];
+      }
+      geoJson = topojson.feature(json, json.objects[topologyObjectName]);
+    }
+
+    this.render(geoJson);
   },
 
   render: function (geoJson) {
