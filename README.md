@@ -24,7 +24,7 @@ Note that it is also required to set a material on the component.  For a meshTyp
 or the flat shader.
 
 #### LineBasicMaterial shader API
-For a meshType of "line", this library provides a customer shader for a LineBasicMaterial.  To use it,
+For a meshType of "line", this library provides a custom shader for a LineBasicMaterial.  To use it,
 set the shader to `linebasic`
 ```html
 <a-entity material="shader: linebasic; color: red;" ...></a-entity>
@@ -111,8 +111,23 @@ require('aframe');
 require('aframe-geo-projection-component');
 ```
 
+## Development
+
+To set up the project for development:
+
+1. Ensure that node >= v8 is installed on your system
+1. `git clone` the repository
+1. run `npm install` in the root of the project directory
+
+Once the project dependencies are installed, you can:
+* run `npm test` to run the tests
+* run `npm start` to load up the examples in a browser.  The content is served via a [budo](https://github.com/mattdesl/budo) dev server so any changes in the code will cause the web page to update automatically.
+* run `npm run lint` to check the code for coding standard violations
+* run `npm run ghpages` to update the github pages branch with the latest examples gallery
+* run `npm publish` to publish the latest version of the package to npm
+
 ## Credits
 
 Created by:
 
-![Earthling Interactive](./examples/img/earthling-logo.png)
+[![Earthling Interactive](./examples/img/earthling-logo.png)](https://earthlinginteractive.com/)
