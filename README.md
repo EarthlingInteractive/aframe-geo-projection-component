@@ -2,6 +2,7 @@
 
 [![Version](http://img.shields.io/npm/v/aframe-geo-projection-component.svg?style=flat-square)](https://npmjs.org/package/aframe-geo-projection-component)
 [![License](http://img.shields.io/npm/l/aframe-geo-projection-component.svg?style=flat-square)](https://npmjs.org/package/aframe-geo-projection-component)
+[![Build Status](https://travis-ci.org/EarthlingInteractive/aframe-geo-projection-component.svg?branch=master)](https://travis-ci.org/EarthlingInteractive/aframe-geo-projection-component)
 
 An [A-Frame](https://aframe.io) component for creating maps in [WebVR](https://webvr.info/) using [d3-geo](https://github.com/d3/d3-geo) projections.
 
