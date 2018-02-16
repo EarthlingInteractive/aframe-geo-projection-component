@@ -7,7 +7,7 @@
 
 An [A-Frame](https://aframe.io) component for creating maps in [WebVR](https://webvr.info/) using [d3-geo](https://github.com/d3/d3-geo) projections.
 
-![The World in VR](./examples/img/shape.png)
+[![The World in VR](./examples/img/shape.png)](https://earthlinginteractive.github.io/aframe-geo-projection-component/)
 
 ### API
 
@@ -23,7 +23,22 @@ An [A-Frame](https://aframe.io) component for creating maps in [WebVR](https://w
 | isCCW | Determines how shapes and holes are identified.  By default solid shapes are defined clockwise (CW) and holes are defined counterclockwise (CCW). If isCCW is set to true, then those are flipped. | false |
 
 Note that it is also required to set a material on the component.  For a meshType of "shape", you can use the standard (default) shader
-or the flat shader.
+or the flat shader.  For a meshType of "line", this library provides a custom shader for a LineBasicMaterial.  See [below](#linebasicmaterial-shader-api) for details.
+
+#### isCCW and its relation to geojson and topojson
+
+The isCCW flag is important when rendering topoJSON vs. geoJSON.  For
+features smaller than a hemisphere, topoJSON uses clockwise shapes while
+geoJSON uses counterclockwise shapes.  For features larger than a
+hemisphere (such as oceans or some continents), the opposite is true.
+
+To summarize:
+* If you're showing a world map using geojson, set isCCW to false.
+* If you're showing a world map using topojson, set isCCW to true.
+* If you're showing a country using geojson, set isCCW to true.
+* If you're showing a country using topojson, set isCCW to false.
+
+See https://github.com/d3/d3-geo for a discussion of winding order conventions.
 
 #### LineBasicMaterial shader API
 For a meshType of "line", this library provides a custom shader for a LineBasicMaterial.  To use it,
@@ -50,21 +65,6 @@ The following configurable properties are provided:
 | transparent | Defines whether this material is transparent. This has an effect on rendering as transparent objects need special treatment and are rendered after non-transparent objects. When set to true, the extent to which the material is transparent is controlled by setting its opacity property.| false |
 | vertexColors | Defines whether vertex coloring is used. | THREE.NoColors |
 | visible | Defines whether this material is visible. | true |
-
-#### isCCW and its relation to geojson and topojson
-
-The isCCW flag is important when rendering topoJSON vs. geoJSON.  For
-features smaller than a hemisphere, topoJSON uses clockwise shapes while
-geoJSON uses counterclockwise shapes.  For features larger than a
-hemisphere (such as oceans or some continents), the opposite is true.
-
-To summarize:
-* If you're showing a world map using geojson, set isCCW to false.
-* If you're showing a world map using topojson, set isCCW to true.
-* If you're showing a country using geojson, set isCCW to true.
-* If you're showing a country using topojson, set isCCW to false.
-
-See https://github.com/d3/d3-geo for a discussion of winding order conventions.
 
 ### Installation
 
