@@ -18,7 +18,7 @@ env:
   global:
     - TEST_SUITE=unit
   matrix:
-    - CI_ACTION="npm run test:ci"
+    - CI_ACTION="npm run test:ci:coveralls"
     - CI_ACTION="npm run dist"
     # - CI_ACTION="npm run lint"
 
