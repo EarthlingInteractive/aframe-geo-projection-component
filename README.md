@@ -2,10 +2,12 @@
 
 [![Version](http://img.shields.io/npm/v/aframe-geo-projection-component.svg?style=flat-square)](https://npmjs.org/package/aframe-geo-projection-component)
 [![License](http://img.shields.io/npm/l/aframe-geo-projection-component.svg?style=flat-square)](https://npmjs.org/package/aframe-geo-projection-component)
+[![Build Status](https://travis-ci.org/EarthlingInteractive/aframe-geo-projection-component.svg?branch=master)](https://travis-ci.org/EarthlingInteractive/aframe-geo-projection-component)
+[![Coverage Status](https://coveralls.io/repos/github/EarthlingInteractive/aframe-geo-projection-component/badge.svg?branch=master)](https://coveralls.io/github/EarthlingInteractive/aframe-geo-projection-component?branch=master)
 
 An [A-Frame](https://aframe.io) component for creating maps in [WebVR](https://webvr.info/) using [d3-geo](https://github.com/d3/d3-geo) projections.
 
-![The World in VR](./examples/img/shape.png)
+[![The World in VR](./examples/img/shape.png)](https://earthlinginteractive.github.io/aframe-geo-projection-component/)
 
 ### API
 
@@ -21,7 +23,22 @@ An [A-Frame](https://aframe.io) component for creating maps in [WebVR](https://w
 | isCCW | Determines how shapes and holes are identified.  By default solid shapes are defined clockwise (CW) and holes are defined counterclockwise (CCW). If isCCW is set to true, then those are flipped. | false |
 
 Note that it is also required to set a material on the component.  For a meshType of "shape", you can use the standard (default) shader
-or the flat shader.
+or the flat shader.  For a meshType of "line", this library provides a custom shader for a LineBasicMaterial.  See [below](#linebasicmaterial-shader-api) for details.
+
+#### isCCW and its relation to geojson and topojson
+
+The isCCW flag is important when rendering topoJSON vs. geoJSON.  For
+features smaller than a hemisphere, topoJSON uses clockwise shapes while
+geoJSON uses counterclockwise shapes.  For features larger than a
+hemisphere (such as oceans or some continents), the opposite is true.
+
+To summarize:
+* If you're showing a world map using geojson, set isCCW to false.
+* If you're showing a world map using topojson, set isCCW to true.
+* If you're showing a country using geojson, set isCCW to true.
+* If you're showing a country using topojson, set isCCW to false.
+
+See https://github.com/d3/d3-geo for a discussion of winding order conventions.
 
 #### LineBasicMaterial shader API
 For a meshType of "line", this library provides a custom shader for a LineBasicMaterial.  To use it,
@@ -48,21 +65,6 @@ The following configurable properties are provided:
 | transparent | Defines whether this material is transparent. This has an effect on rendering as transparent objects need special treatment and are rendered after non-transparent objects. When set to true, the extent to which the material is transparent is controlled by setting its opacity property.| false |
 | vertexColors | Defines whether vertex coloring is used. | THREE.NoColors |
 | visible | Defines whether this material is visible. | true |
-
-#### isCCW and its relation to geojson and topojson
-
-The isCCW flag is important when rendering topoJSON vs. geoJSON.  For
-features smaller than a hemisphere, topoJSON uses clockwise shapes while
-geoJSON uses counterclockwise shapes.  For features larger than a
-hemisphere (such as oceans or some continents), the opposite is true.
-
-To summarize:
-* If you're showing a world map using geojson, set isCCW to false.
-* If you're showing a world map using topojson, set isCCW to true.
-* If you're showing a country using geojson, set isCCW to true.
-* If you're showing a country using topojson, set isCCW to false.
-
-See https://github.com/d3/d3-geo for a discussion of winding order conventions.
 
 ### Installation
 
@@ -115,18 +117,19 @@ require('aframe-geo-projection-component');
 
 To set up the project for development:
 
-1. Ensure that node > v8 is installed on your system
+1. Ensure that node >= v8 is installed on your system
 1. `git clone` the repository
 1. run `npm install` in the root of the project directory
 
 Once the project dependencies are installed, you can:
 * run `npm test` to run the tests
-* run `npm start` to load up the examples in a browser.  The content is served via the [budo](https://github.com/mattdesl/budo) dev server so any changes in the code will cause the web page to update automatically.
+* run `npm start` to load up the examples in a browser.  The content is served via a [budo](https://github.com/mattdesl/budo) dev server so any changes in the code will cause the web page to update automatically.
 * run `npm run lint` to check the code for coding standard violations
-* run `npm run ghpages` to update the github pages branch 
+* run `npm run ghpages` to update the github pages branch with the latest examples gallery
+* run `npm publish` to publish the latest version of the package to npm
 
 ## Credits
 
 Created by:
 
-![Earthling Interactive](./examples/img/earthling-logo.png)
+[![Earthling Interactive](./examples/img/earthling-logo.png)](https://earthlinginteractive.com/)
