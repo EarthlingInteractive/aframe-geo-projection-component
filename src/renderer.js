@@ -3,6 +3,14 @@ var ThreeJSRenderContext = require('./renderContext').ThreeJSRenderContext;
 
 var THREE = AFRAME.THREE;
 
+function renderToContext(geoJson, projection) {
+  var shapePath = new THREE.ShapePath();
+  var mapRenderContext = new ThreeJSRenderContext(shapePath);
+  var mapPath = d3.geoPath(projection, mapRenderContext);
+  mapPath(geoJson);
+  return mapRenderContext;
+}
+
 module.exports = {
   /**
    * Takes the input geoJson and renders it as an Object3D.
@@ -21,47 +29,60 @@ module.exports = {
     var material = renderOptions.material;
     var isCCW = renderOptions.isCCW;
 
-    var geometry = this.createGeometry(geoJson, projection, meshType, isCCW);
-    return this.createMesh(meshType, geometry, material);
+    var renderer = this.createRenderer(meshType);
+    var geometry = renderer.createGeometry(geoJson, projection, isCCW);
+    return renderer.createMesh(geometry, material);
   },
 
-  createGeometry: function (geoJson, projection, meshType, isCCW) {
-    var shapePath = new THREE.ShapePath();
-    var mapRenderContext = new ThreeJSRenderContext(shapePath);
-    var mapPath = d3.geoPath(projection, mapRenderContext);
-    mapPath(geoJson);
-
+  createRenderer: function createRenderer(meshType) {
     switch (meshType) {
       case 'line':
-        var lineGeometry = new THREE.BufferGeometry();
-        var vertices = mapRenderContext.toVertices();
-        lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        return lineGeometry;
+        return this.lineRenderer;
       case 'shape':
-        const shapes = mapRenderContext.toShapes(isCCW);
-        return new THREE.ShapeBufferGeometry(shapes);
+        return this.shapeRenderer;
       case 'extrude':
-        const extrudeSettings = {
-          amount: 1,
-          bevelEnabled: false
-        };
-        const extShapes = mapRenderContext.toShapes(isCCW);
-        return new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
+        return this.extrudeRenderer;
       default:
         throw new Error('Unsupported meshType: ' + meshType);
     }
   },
 
-  createMesh: function (meshType, geometry, material) {
-    switch (meshType) {
-      case 'line':
-        return new THREE.LineSegments(geometry, material);
-      case 'shape':
-        return new THREE.Mesh(geometry, material);
-      case 'extrude':
-        return new THREE.Mesh(geometry, material);
-      default:
-        throw new Error('Unsupported meshType: ' + meshType);
+  lineRenderer: {
+    createGeometry: function createGeometry(geoJson, projection) {
+      var mapRenderContext = renderToContext(geoJson, projection);
+      var lineGeometry = new THREE.BufferGeometry();
+      var vertices = mapRenderContext.toVertices();
+      lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      return lineGeometry;
+    },
+    createMesh: function createMesh(geometry, material) {
+      return new THREE.LineSegments(geometry, material);
+    }
+  },
+
+  shapeRenderer: {
+    createGeometry: function createGeometry(geoJson, projection, isCCW) {
+      var mapRenderContext = renderToContext(geoJson, projection);
+      const shapes = mapRenderContext.toShapes(isCCW);
+      return new THREE.ShapeBufferGeometry(shapes);
+    },
+    createMesh: function createMesh(geometry, material) {
+      return new THREE.Mesh(geometry, material);
+    }
+  },
+
+  extrudeRenderer: {
+    createGeometry: function createGeometry(geoJson, projection, isCCW) {
+      var mapRenderContext = renderToContext(geoJson, projection);
+      const extrudeSettings = {
+        amount: 1,
+        bevelEnabled: false
+      };
+      const extShapes = mapRenderContext.toShapes(isCCW);
+      return new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
+    },
+    createMesh: function createMesh(geometry, material) {
+      return new THREE.Mesh(geometry, material);
     }
   }
 };
