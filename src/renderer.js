@@ -21,6 +21,11 @@ module.exports = {
     var material = renderOptions.material;
     var isCCW = renderOptions.isCCW;
 
+    var geometry = this.createGeometry(geoJson, projection, meshType, isCCW);
+    return this.createMesh(meshType, geometry, material);
+  },
+
+  createGeometry: function (geoJson, projection, meshType, isCCW) {
     var shapePath = new THREE.ShapePath();
     var mapRenderContext = new ThreeJSRenderContext(shapePath);
     var mapPath = d3.geoPath(projection, mapRenderContext);
@@ -31,19 +36,30 @@ module.exports = {
         var lineGeometry = new THREE.BufferGeometry();
         var vertices = mapRenderContext.toVertices();
         lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        return new THREE.LineSegments(lineGeometry, material);
+        return lineGeometry;
       case 'shape':
         const shapes = mapRenderContext.toShapes(isCCW);
-        var shapeGeometry = new THREE.ShapeBufferGeometry(shapes);
-        return new THREE.Mesh(shapeGeometry, material);
+        return new THREE.ShapeBufferGeometry(shapes);
       case 'extrude':
         const extrudeSettings = {
           amount: 1,
           bevelEnabled: false
         };
         const extShapes = mapRenderContext.toShapes(isCCW);
-        var extGeometry = new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
-        return new THREE.Mesh(extGeometry, material);
+        return new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
+      default:
+        throw new Error('Unsupported meshType: ' + meshType);
+    }
+  },
+
+  createMesh: function (meshType, geometry, material) {
+    switch (meshType) {
+      case 'line':
+        return new THREE.LineSegments(geometry, material);
+      case 'shape':
+        return new THREE.Mesh(geometry, material);
+      case 'extrude':
+        return new THREE.Mesh(geometry, material);
       default:
         throw new Error('Unsupported meshType: ' + meshType);
     }
