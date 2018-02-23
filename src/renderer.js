@@ -1,5 +1,4 @@
 var d3 = require('d3-geo');
-var projectionLib = require('./projection');
 var ThreeJSRenderContext = require('./renderContext').ThreeJSRenderContext;
 
 var THREE = AFRAME.THREE;
@@ -10,23 +9,18 @@ module.exports = {
    *
    * @param geoJson the geoJson object to render
    * @param renderOptions object containing parameters for rendering
-   * @param renderOptions.projectionName the name of a projection from d3-geo or d3-geo-projection
+   * @param renderOptions.projection the projection to use for rendering
    * @param renderOptions.meshType the type of Object3D to render -- 'line' or 'shape'
    * @param renderOptions.material the THREE.Material to use in the resulting Object3D
-   * @param renderOptions.height the height in A-Frame units
-   * @param renderOptions.width the width in A-Frame units
    * @param renderOptions.isCCW true if shapes are defined counter-clockwise and holes defined clockwise; false for the reverse
    * @return THREE.Object3D
    */
   renderGeoJson: function (geoJson, renderOptions) {
-    var projectionName = renderOptions.projectionName;
-    var height = renderOptions.height;
-    var width = renderOptions.width;
+    var projection = renderOptions.projection;
     var meshType = renderOptions.meshType;
     var material = renderOptions.material;
     var isCCW = renderOptions.isCCW;
 
-    var projection = projectionLib.getFittedProjection(projectionName, geoJson, height, width);
     var shapePath = new THREE.ShapePath();
     var mapRenderContext = new ThreeJSRenderContext(shapePath);
     var mapPath = d3.geoPath(projection, mapRenderContext);
@@ -39,7 +33,6 @@ module.exports = {
         lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         return new THREE.LineSegments(lineGeometry, material);
       case 'shape':
-        // TODO: pass isCCW as an option
         const shapes = mapRenderContext.toShapes(isCCW);
         var shapeGeometry = new THREE.ShapeBufferGeometry(shapes);
         return new THREE.Mesh(shapeGeometry, material);

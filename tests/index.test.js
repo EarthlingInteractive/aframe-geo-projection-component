@@ -219,10 +219,7 @@ suite('geo-projection component', function () {
       sandbox.spy(renderer, 'renderGeoJson');
       component.render(geoJson);
       var expectedBaseOptions = {
-        projectionName: 'geoStereographic',
         meshType: 'line',
-        width: 2,
-        height: 3,
         isCCW: true
       };
       sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match(expectedBaseOptions));

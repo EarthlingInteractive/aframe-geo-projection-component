@@ -2,6 +2,7 @@
 
 require('./src/lineBasicMaterial');
 var renderer = require('./src/renderer');
+var projectionLib = require('./src/projection');
 var topojson = require('topojson-client');
 
 if (typeof AFRAME === 'undefined') {
@@ -76,12 +77,11 @@ AFRAME.registerComponent('geo-projection', {
 
   render: function (geoJson) {
     var material = this.el.components.material.material;
+    var projection = projectionLib.getFittedProjection(this.data.projection, geoJson, this.data.height, this.data.width);
     var renderOptions = {
-      projectionName: this.data.projection,
+      projection: projection,
       meshType: this.data.meshType,
       material: material,
-      height: this.data.height,
-      width: this.data.width,
       isCCW: this.data.isCCW
     };
     var object3D = renderer.renderGeoJson(geoJson, renderOptions);
