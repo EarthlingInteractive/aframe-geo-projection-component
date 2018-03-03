@@ -1,4 +1,4 @@
-/* global assert, setup, suite, test */
+/* global assert, setup, teardown, suite, test */
 require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();

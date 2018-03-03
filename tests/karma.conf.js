@@ -29,8 +29,8 @@ module.exports = function (config) {
     },
     reporters: ['mocha', 'coverage'],
     coverageReporter: {
-      type : 'lcov',
-      dir : 'coverage/'
+      type: 'lcov',
+      dir: 'coverage/'
     }
   });
 };

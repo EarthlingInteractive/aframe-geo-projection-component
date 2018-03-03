@@ -67,7 +67,7 @@ AFRAME.registerComponent('geo-projection', {
     this.render();
   },
 
-  parseGeoJson: function(text) {
+  parseGeoJson: function (text) {
     var json = JSON.parse(text);
 
     var geoJson = json;

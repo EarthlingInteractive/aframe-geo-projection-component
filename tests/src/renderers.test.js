@@ -1,4 +1,4 @@
-/* global assert, setup, suite, test */
+/* global assert, teardown, suite, test */
 var renderer = require('../../src/renderers');
 var projectionLib = require('../../src/projection');
 var ThreeJSRenderContext = require('../../src/renderContext').ThreeJSRenderContext;
@@ -20,7 +20,7 @@ var squareGeoJson = {
   }
 };
 
-var defaultProjection = function(geoJson) {
+var defaultProjection = function (geoJson) {
   return projectionLib.getFittedProjection('geoIdentity', geoJson, 10, 10);
 };
 

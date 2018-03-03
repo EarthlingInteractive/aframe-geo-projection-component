@@ -1,4 +1,5 @@
-/* global assert, setup, suite, test */
+/* global assert, suite, test */
+var sinon = require('sinon');
 var ThreeJSRenderContext = require('../../src/renderContext').ThreeJSRenderContext;
 
 suite('ThreeJSRenderContext', function () {
@@ -58,19 +59,19 @@ suite('ThreeJSRenderContext', function () {
     test('#toVertices', function () {
       var mockShapePath = { subPaths: [
           { curves: [
-              {
-                isLineCurve: true,
-                v1: { x: 1, y: 2 },
-                v2: { x: 3, y: 4 }
-              },
-              {
-                isLineCurve: false,
-                getPoints: function() {
-                  return [ { x: 5, y: 6 }]
-                }
+            {
+              isLineCurve: true,
+              v1: { x: 1, y: 2 },
+              v2: { x: 3, y: 4 }
+            },
+            {
+              isLineCurve: false,
+              getPoints: function () {
+                return [ { x: 5, y: 6 } ];
               }
-            ] }
-        ] };
+            }
+          ] }
+      ] };
       var context = new ThreeJSRenderContext(mockShapePath);
       var vertices = context.toVertices();
       assert.deepEqual(vertices, [1, 2, 0, 3, 4, 0, 5, 6, 0]);

@@ -7,7 +7,7 @@
  * @constructor
  * @see https://github.com/d3/d3-geo#path_context
  */
-function ThreeJSRenderContext(shapePath) {
+function ThreeJSRenderContext (shapePath) {
   this.shapePath = shapePath;
 }
 
