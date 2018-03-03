@@ -3,6 +3,14 @@ var ThreeJSRenderContext = require('./renderContext').ThreeJSRenderContext;
 
 var THREE = AFRAME.THREE;
 
+/**
+ * Takes the input geoJson and uses the projection and D3 to draw it
+ * into a ThreeJSRenderContext.
+ *
+ * @param geoJson the geoJson object to render
+ * @param projection the projection to use for rendering
+ * @return ThreeJSRenderContext
+ */
 function renderToContext (geoJson, projection) {
   var shapePath = new THREE.ShapePath();
   var mapRenderContext = new ThreeJSRenderContext(shapePath);
@@ -11,43 +19,23 @@ function renderToContext (geoJson, projection) {
   return mapRenderContext;
 }
 
+/**
+ * Takes the input geoJson and renders it as an Object3D.
+ *
+ * @param geoJson the geoJson object to render
+ * @param projection the projection to use for rendering
+ * @param isCCW true if shapes are defined counter-clockwise and holes defined clockwise; false for the reverse
+ * @param material the THREE.Material to use in the resulting Object3D
+ * @return THREE.Object3D
+ */
+function render (geoJson, projection, isCCW, material) {
+  var geometry = this.createGeometry(geoJson, projection, isCCW);
+  return this.createMesh(geometry, material);
+}
+
 module.exports = {
-  /**
-   * Takes the input geoJson and renders it as an Object3D.
-   *
-   * @param geoJson the geoJson object to render
-   * @param renderOptions object containing parameters for rendering
-   * @param renderOptions.projection the projection to use for rendering
-   * @param renderOptions.meshType the type of Object3D to render -- 'line' or 'shape'
-   * @param renderOptions.material the THREE.Material to use in the resulting Object3D
-   * @param renderOptions.isCCW true if shapes are defined counter-clockwise and holes defined clockwise; false for the reverse
-   * @return THREE.Object3D
-   */
-  renderGeoJson: function (geoJson, renderOptions) {
-    var projection = renderOptions.projection;
-    var meshType = renderOptions.meshType;
-    var material = renderOptions.material;
-    var isCCW = renderOptions.isCCW;
-
-    var renderer = this.getRenderer(meshType);
-    var geometry = renderer.createGeometry(geoJson, projection, isCCW);
-    return renderer.createMesh(geometry, material);
-  },
-
-  getRenderer: function getRenderer (meshType) {
-    switch (meshType) {
-      case 'line':
-        return this.lineRenderer;
-      case 'shape':
-        return this.shapeRenderer;
-      case 'extrude':
-        return this.extrudeRenderer;
-      default:
-        throw new Error('Unsupported meshType: ' + meshType);
-    }
-  },
-
-  lineRenderer: {
+  line: {
+    render: render,
     renderToContext: renderToContext,
     createGeometry: function createGeometry (geoJson, projection) {
       var mapRenderContext = this.renderToContext(geoJson, projection);
@@ -61,7 +49,8 @@ module.exports = {
     }
   },
 
-  shapeRenderer: {
+  shape: {
+    render: render,
     renderToContext: renderToContext,
     createGeometry: function createGeometry (geoJson, projection, isCCW) {
       var mapRenderContext = this.renderToContext(geoJson, projection);
@@ -73,7 +62,8 @@ module.exports = {
     }
   },
 
-  extrudeRenderer: {
+  extrude: {
+    render: render,
     renderToContext: renderToContext,
     createGeometry: function createGeometry (geoJson, projection, isCCW) {
       var mapRenderContext = this.renderToContext(geoJson, projection);

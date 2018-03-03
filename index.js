@@ -54,7 +54,7 @@ AFRAME.registerComponent('geo-projection', {
    * Generally modifies the entity based on the data.
    */
   update: function (oldData) {
-    this.renderer = renderers.getRenderer(this.data.meshType);
+    this.renderer = renderers[this.data.meshType];
     var src = this.data.src;
     if (src && src !== oldData.src) {
       this.loader.load(src, this.onSrcLoaded.bind(this));
@@ -83,8 +83,7 @@ AFRAME.registerComponent('geo-projection', {
 
   render: function () {
     var material = this.el.components.material.material;
-    var geometry = this.renderer.createGeometry(this.geoJson, this.projection, this.data.isCCW);
-    var object3D = this.renderer.createMesh(geometry, material);
+    var object3D = this.renderer.render(this.geoJson, this.projection, this.data.isCCW, material);
     this.el.setObject3D('map', object3D);
   },
 
