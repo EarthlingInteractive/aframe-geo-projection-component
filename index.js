@@ -1,7 +1,7 @@
 /* global AFRAME */
 
 require('./src/lineBasicMaterial');
-var renderer = require('./src/renderer');
+var renderers = require('./src/renderers');
 var projectionLib = require('./src/projection');
 var topojson = require('topojson-client');
 
@@ -54,6 +54,7 @@ AFRAME.registerComponent('geo-projection', {
    * Generally modifies the entity based on the data.
    */
   update: function (oldData) {
+    this.renderer = renderers.getRenderer(this.data.meshType);
     var src = this.data.src;
     if (src && src !== oldData.src) {
       this.loader.load(src, this.onSrcLoaded.bind(this));
@@ -61,6 +62,12 @@ AFRAME.registerComponent('geo-projection', {
   },
 
   onSrcLoaded: function (text) {
+    this.geoJson = this.parseGeoJson(text);
+    this.projection = projectionLib.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
+    this.render();
+  },
+
+  parseGeoJson: function(text) {
     var json = JSON.parse(text);
 
     var geoJson = json;
@@ -71,20 +78,13 @@ AFRAME.registerComponent('geo-projection', {
       }
       geoJson = topojson.feature(json, json.objects[topologyObjectName]);
     }
-
-    this.render(geoJson);
+    return geoJson;
   },
 
-  render: function (geoJson) {
+  render: function () {
     var material = this.el.components.material.material;
-    var projection = projectionLib.getFittedProjection(this.data.projection, geoJson, this.data.height, this.data.width);
-    var renderOptions = {
-      projection: projection,
-      meshType: this.data.meshType,
-      material: material,
-      isCCW: this.data.isCCW
-    };
-    var object3D = renderer.renderGeoJson(geoJson, renderOptions);
+    var geometry = this.renderer.createGeometry(this.geoJson, this.projection, this.data.isCCW);
+    var object3D = this.renderer.createMesh(geometry, material);
     this.el.setObject3D('map', object3D);
   },
 

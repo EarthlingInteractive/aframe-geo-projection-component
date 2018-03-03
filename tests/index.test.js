@@ -3,7 +3,6 @@ require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
 require('../index.js');
-var renderer = require('../src/renderer');
 var entityFactory = require('./helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
@@ -98,7 +97,7 @@ suite('geo-projection component', function () {
   suite('dependencies', function () {
     suite('material', function () {
       test('can access a material defined on the component', function () {
-        el.setAttribute('material', { color: 'red' });
+        el.setAttribute('material', {color: 'red'});
         var material = el.components.material.material;
         assert.instanceOf(material, THREE.Material, 'is an instance of Material');
         assert.propertyVal(material.color, 'r', 1);
@@ -119,14 +118,14 @@ suite('geo-projection component', function () {
     });
   });
 
-  suite('#update', function() {
+  suite('#update', function () {
     suite('when the src property changes', function () {
       test('loads the new src asset', function () {
         var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
         var loaderStub = sandbox.stub(THREE, 'FileLoader');
         loaderStub.returns(fakeLoader);
         sandbox.spy(component, 'update');
-        sandbox.stub(component.onSrcLoaded, 'bind').callsFake(function () { return component.onSrcLoaded });
+        sandbox.stub(component.onSrcLoaded, 'bind').callsFake(function () { return component.onSrcLoaded; });
 
         component.init();
         el.setAttribute('geo-projection', {
@@ -166,11 +165,12 @@ suite('geo-projection component', function () {
         var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
         component.onSrcLoaded(text);
 
-        sinon.assert.calledWithMatch(component.render, { type: 'LineString' });
+        assert.deepEqual(component.geoJson, {type: 'LineString', coordinates: [[0, 0], [1, 1]]});
+        sinon.assert.called(component.render);
       });
     });
     suite('when srcType is topojson', function () {
-      var topoJson = "{\"type\":\"Topology\",\"transform\":{\"scale\":[0.036003600360036005,0.017361589674592462],\"translate\":[-180,-89.99892578124998]},\"objects\":{\"aruba\":{\"type\":\"Polygon\",\"arcs\":[[0]],\"id\":533},\"line\":{\"type\":\"LineString\",\"arcs\":[[1]],\"id\":534}},\"arcs\":[[[3058,5901],[0,-2],[-2,1],[-1,3],[-2,3],[0,3],[1,1],[1,-3],[2,-5],[1,-1]],[[3058,5901],[0,1]]]}";
+      var topoJson = '{"type":"Topology","transform":{"scale":[0.036003600360036005,0.017361589674592462],"translate":[-180,-89.99892578124998]},"objects":{"aruba":{"type":"Polygon","arcs":[[0]],"id":533},"line":{"type":"LineString","arcs":[[1]],"id":534}},"arcs":[[[3058,5901],[0,-2],[-2,1],[-1,3],[-2,3],[0,3],[1,1],[1,-3],[2,-5],[1,-1]],[[3058,5901],[0,1]]]}';
       suite('and topologyObject is defined', function () {
         test('renders the given topologyObject', function () {
           el.setAttribute('geo-projection', {
@@ -181,7 +181,14 @@ suite('geo-projection component', function () {
           sandbox.spy(component, 'render');
           component.onSrcLoaded(topoJson);
 
-          sinon.assert.calledWithMatch(component.render, { geometry: { type: 'LineString' } });
+          var expectedGeoJsonSnippet = {
+            geometry: {
+              type: 'LineString',
+              coordinates: [[-69.9009900990099, 12.451814888520133], [-69.9009900990099, 12.469176478194726]]
+            }
+          };
+          assert.deepInclude(component.geoJson, expectedGeoJsonSnippet);
+          sinon.assert.called(component.render);
         });
       });
       suite('and topologyObject is not defined', function () {
@@ -193,7 +200,22 @@ suite('geo-projection component', function () {
           sandbox.spy(component, 'render');
           component.onSrcLoaded(topoJson);
 
-          sinon.assert.calledWithMatch(component.render, { geometry: { type: 'Polygon' } });
+          var expectedGeoJsonSnippet = {
+            geometry: {
+              'type': 'Polygon',
+              'coordinates': [
+                [
+                  [-69.9009900990099, 12.451814888520133], [-69.9009900990099, 12.417091709170947],
+                  [-69.97299729972997, 12.43445329884554], [-70.00900090009, 12.486538067869319],
+                  [-70.08100810081008, 12.538622836893097], [-70.08100810081008, 12.590707605916876],
+                  [-70.04500450045005, 12.608069195591469], [-70.00900090009, 12.55598442656769],
+                  [-69.93699369936994, 12.469176478194726], [-69.9009900990099, 12.451814888520133]
+                ]
+              ]
+            }
+          };
+          assert.deepInclude(component.geoJson, expectedGeoJsonSnippet);
+          sinon.assert.called(component.render);
         });
       });
     });
@@ -201,35 +223,16 @@ suite('geo-projection component', function () {
 
   suite('#render', function () {
     test('sets an Object3D on the component', function () {
-      var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
-      component.render(geoJson);
+      component.geoJson = {type: 'LineString', coordinates: [[0, 0], [1, 1]]};
+      component.render();
       var object3D = component.el.getObject3D('map');
       assert.instanceOf(object3D, THREE.Object3D);
-    });
-    test('passes the correct parameters to the renderer', function () {
-      var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
-      el.setAttribute('material', { shader: 'flat' });
-      el.setAttribute('geo-projection', {
-        projection: 'geoStereographic',
-        meshType: 'line',
-        width: 2,
-        height: 3,
-        isCCW: true
-      });
-      sandbox.spy(renderer, 'renderGeoJson');
-      component.render(geoJson);
-      var expectedBaseOptions = {
-        meshType: 'line',
-        isCCW: true
-      };
-      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match(expectedBaseOptions));
-      sinon.assert.calledWith(renderer.renderGeoJson, geoJson, sinon.match.has('material', sinon.match.instanceOf(THREE.MeshBasicMaterial)));
     });
   });
 
   suite('#remove', function () {
     test('removes the Object3D set on the component', function () {
-      var geoJson = { type: 'LineString', coordinates: [[0, 0], [1, 1]] };
+      var geoJson = {type: 'LineString', coordinates: [[0, 0], [1, 1]]};
       component.render(geoJson);
       component.remove();
       var object3D = component.el.getObject3D('map');

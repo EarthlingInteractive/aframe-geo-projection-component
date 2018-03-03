@@ -1,5 +1,5 @@
 /* global assert, setup, suite, test */
-var renderer = require('../../src/renderer');
+var renderer = require('../../src/renderers');
 var projectionLib = require('../../src/projection');
 var ThreeJSRenderContext = require('../../src/renderContext').ThreeJSRenderContext;
 var sinon = require('sinon');
