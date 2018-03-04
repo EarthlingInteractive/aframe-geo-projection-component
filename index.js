@@ -9,6 +9,7 @@ if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
 }
 var THREE = AFRAME.THREE;
+var GEO_SRC_LOADED_EVENT = 'geo-src-loaded';
 
 /**
  * Geo Projection component for A-Frame.
@@ -65,6 +66,9 @@ AFRAME.registerComponent('geo-projection', {
     this.geoJson = this.parseGeoJson(text);
     this.projection = projectionLib.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
     this.render();
+    this.el.emit(GEO_SRC_LOADED_EVENT, {
+      geoProjectionComponent: this
+    });
   },
 
   parseGeoJson: function (text) {
@@ -98,3 +102,7 @@ AFRAME.registerComponent('geo-projection', {
     }
   }
 });
+
+module.exports = {
+  GEO_SRC_LOADED_EVENT: GEO_SRC_LOADED_EVENT
+};

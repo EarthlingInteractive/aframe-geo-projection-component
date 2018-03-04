@@ -2,7 +2,7 @@
 require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
-require('../index.js');
+var geoProjectionComponent = require('../index.js');
 var entityFactory = require('./helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
@@ -218,6 +218,16 @@ suite('geo-projection component', function () {
           sinon.assert.called(component.render);
         });
       });
+    });
+    test('emits an event when it completes loading', function () {
+      var eventHandlerSpy = sandbox.spy();
+      sandbox.spy(component, 'render');
+
+      el.addEventListener(geoProjectionComponent.GEO_SRC_LOADED_EVENT, eventHandlerSpy);
+      var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
+      component.onSrcLoaded(text);
+
+      sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { geoProjectionComponent: component } });
     });
   });
 
