@@ -1,4 +1,4 @@
-/* global assert, setup, suite, test */
+/* global assert, suite, test */
 var d3 = require('d3-geo');
 var projectionLib = require('../../src/projection');
 
@@ -12,7 +12,7 @@ suite('projection-related functions', function () {
     });
     test('throws an error if an invalid projection is specified', function () {
       assert.throws(
-        function () { projectionLib.getD3Projection('badStuff') },
+        function () { projectionLib.getD3Projection('badStuff'); },
         'Invalid d3 projection; use a projection from d3-geo or d3-geo-projection');
     });
   });
@@ -43,7 +43,7 @@ suite('projection-related functions', function () {
       var geoJson = {type: 'LineString', coordinates: [[0, 0], [100, 100]]};
       var projectionName = 'geoIdentity';
       var width = 2;
-      var height= 2;
+      var height = 2;
       var projection = projectionLib.getFittedProjection(projectionName, geoJson, height, width);
       var path = d3.geoPath().projection(projection);
       var result = path(geoJson);
@@ -53,7 +53,7 @@ suite('projection-related functions', function () {
       var geoJson = {type: 'LineString', coordinates: [[0, 0], [100, 100]]};
       var projectionName = 'geoIdentity';
       var width = 10;
-      var height= 20;
+      var height = 20;
       var projection = projectionLib.getFittedProjection(projectionName, geoJson, height, width);
       var path = d3.geoPath().projection(projection);
       var result = path(geoJson);

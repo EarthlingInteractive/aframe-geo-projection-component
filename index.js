@@ -1,13 +1,15 @@
 /* global AFRAME */
 
 require('./src/lineBasicMaterial');
-var renderer = require('./src/renderer');
+var renderers = require('./src/renderers');
+var projectionLib = require('./src/projection');
 var topojson = require('topojson-client');
 
 if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
 }
 var THREE = AFRAME.THREE;
+var GEO_SRC_LOADED_EVENT = 'geo-src-loaded';
 
 /**
  * Geo Projection component for A-Frame.
@@ -53,6 +55,7 @@ AFRAME.registerComponent('geo-projection', {
    * Generally modifies the entity based on the data.
    */
   update: function (oldData) {
+    this.renderer = renderers[this.data.meshType];
     var src = this.data.src;
     if (src && src !== oldData.src) {
       this.loader.load(src, this.onSrcLoaded.bind(this));
@@ -60,6 +63,15 @@ AFRAME.registerComponent('geo-projection', {
   },
 
   onSrcLoaded: function (text) {
+    this.geoJson = this.parseGeoJson(text);
+    this.projection = projectionLib.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
+    this.render();
+    this.el.emit(GEO_SRC_LOADED_EVENT, {
+      geoProjectionComponent: this
+    });
+  },
+
+  parseGeoJson: function (text) {
     var json = JSON.parse(text);
 
     var geoJson = json;
@@ -70,21 +82,12 @@ AFRAME.registerComponent('geo-projection', {
       }
       geoJson = topojson.feature(json, json.objects[topologyObjectName]);
     }
-
-    this.render(geoJson);
+    return geoJson;
   },
 
-  render: function (geoJson) {
+  render: function () {
     var material = this.el.components.material.material;
-    var renderOptions = {
-      projectionName: this.data.projection,
-      meshType: this.data.meshType,
-      material: material,
-      height: this.data.height,
-      width: this.data.width,
-      isCCW: this.data.isCCW
-    };
-    var object3D = renderer.renderGeoJson(geoJson, renderOptions);
+    var object3D = this.renderer.render(this.geoJson, this.projection, this.data.isCCW, material);
     this.el.setObject3D('map', object3D);
   },
 
@@ -99,3 +102,7 @@ AFRAME.registerComponent('geo-projection', {
     }
   }
 });
+
+module.exports = {
+  GEO_SRC_LOADED_EVENT: GEO_SRC_LOADED_EVENT
+};

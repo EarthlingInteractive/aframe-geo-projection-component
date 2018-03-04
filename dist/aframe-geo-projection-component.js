@@ -47,13 +47,15 @@
 	/* global AFRAME */
 
 	__webpack_require__(1);
-	var renderer = __webpack_require__(2);
+	var renderers = __webpack_require__(2);
+	var projectionLib = __webpack_require__(6);
 	var topojson = __webpack_require__(15);
 
 	if (typeof AFRAME === 'undefined') {
 	  throw new Error('Component attempted to register before AFRAME was available.');
 	}
 	var THREE = AFRAME.THREE;
+	var GEO_SRC_LOADED_EVENT = 'geo-src-loaded';
 
 	/**
 	 * Geo Projection component for A-Frame.
@@ -99,6 +101,7 @@
 	   * Generally modifies the entity based on the data.
 	   */
 	  update: function (oldData) {
+	    this.renderer = renderers[this.data.meshType];
 	    var src = this.data.src;
 	    if (src && src !== oldData.src) {
 	      this.loader.load(src, this.onSrcLoaded.bind(this));
@@ -106,6 +109,15 @@
 	  },
 
 	  onSrcLoaded: function (text) {
+	    this.geoJson = this.parseGeoJson(text);
+	    this.projection = projectionLib.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
+	    this.render();
+	    this.el.emit(GEO_SRC_LOADED_EVENT, {
+	      geoProjectionComponent: this
+	    });
+	  },
+
+	  parseGeoJson: function (text) {
 	    var json = JSON.parse(text);
 
 	    var geoJson = json;
@@ -116,21 +128,12 @@
 	      }
 	      geoJson = topojson.feature(json, json.objects[topologyObjectName]);
 	    }
-
-	    this.render(geoJson);
+	    return geoJson;
 	  },
 
-	  render: function (geoJson) {
+	  render: function () {
 	    var material = this.el.components.material.material;
-	    var renderOptions = {
-	      projectionName: this.data.projection,
-	      meshType: this.data.meshType,
-	      material: material,
-	      height: this.data.height,
-	      width: this.data.width,
-	      isCCW: this.data.isCCW
-	    };
-	    var object3D = renderer.renderGeoJson(geoJson, renderOptions);
+	    var object3D = this.renderer.render(this.geoJson, this.projection, this.data.isCCW, material);
 	    this.el.setObject3D('map', object3D);
 	  },
 
@@ -146,6 +149,10 @@
 	  }
 	});
 
+	module.exports = {
+	  GEO_SRC_LOADED_EVENT: GEO_SRC_LOADED_EVENT
+	};
+
 
 /***/ }),
 /* 1 */
@@ -155,20 +162,20 @@
 	// from https://stackoverflow.com/questions/39905663/aframe-how-to-put-three-linebasicmaterial-in-aframe
 	AFRAME.registerShader('linebasic', {
 	  schema: {
-	    blending:       {default: THREE.NormalBlending},
-	    color:          {type: 'color', default: '#000', is: 'uniform'},
-	    depthTest:      {default: true},
-	    depthFunc:      {default: THREE.LessEqualDepth},
-	    depthWrite:     {default: true},
-	    fog:            {default: false},
-	    linewidth:      {default: 1},
-	    linecap:        {default: 'round'},
-	    linejoin:       {default: 'round'},
-	    opacity:        {default: 1},
-	    side:           {default: THREE.FrontSide},
-	    transparent:    {default: false},
-	    vertexColors:   {default: THREE.NoColors},
-	    visible:        {default: true}
+	    blending: {default: THREE.NormalBlending},
+	    color: {type: 'color', default: '#000', is: 'uniform'},
+	    depthTest: {default: true},
+	    depthFunc: {default: THREE.LessEqualDepth},
+	    depthWrite: {default: true},
+	    fog: {default: false},
+	    linewidth: {default: 1},
+	    linecap: {default: 'round'},
+	    linejoin: {default: 'round'},
+	    opacity: {default: 1},
+	    side: {default: THREE.FrontSide},
+	    transparent: {default: false},
+	    vertexColors: {default: THREE.NoColors},
+	    visible: {default: true}
 	  },
 	  init: function (data) {
 	    data = AFRAME.utils.extend({}, data);
@@ -191,60 +198,81 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	var d3 = __webpack_require__(3);
-	var projectionLib = __webpack_require__(5);
-	var ThreeJSRenderContext = __webpack_require__(14).ThreeJSRenderContext;
+	var ThreeJSRenderContext = __webpack_require__(5).ThreeJSRenderContext;
 
 	var THREE = AFRAME.THREE;
 
+	/**
+	 * Takes the input geoJson and uses the projection and D3 to draw it
+	 * into a ThreeJSRenderContext.
+	 *
+	 * @param geoJson the geoJson object to render
+	 * @param projection the projection to use for rendering
+	 * @return ThreeJSRenderContext
+	 */
+	function renderToContext (geoJson, projection) {
+	  var shapePath = new THREE.ShapePath();
+	  var mapRenderContext = new ThreeJSRenderContext(shapePath);
+	  var mapPath = d3.geoPath(projection, mapRenderContext);
+	  mapPath(geoJson);
+	  return mapRenderContext;
+	}
+
+	/**
+	 * Takes the input geoJson and renders it as an Object3D.
+	 *
+	 * @param geoJson the geoJson object to render
+	 * @param projection the projection to use for rendering
+	 * @param isCCW true if shapes are defined counter-clockwise and holes defined clockwise; false for the reverse
+	 * @param material the THREE.Material to use in the resulting Object3D
+	 * @return THREE.Object3D
+	 */
+	function render (geoJson, projection, isCCW, material) {
+	  var mapRenderContext = this.renderToContext(geoJson, projection);
+	  var geometry = this.createGeometry(mapRenderContext, isCCW);
+	  return this.createMesh(geometry, material);
+	}
+
 	module.exports = {
-	  /**
-	   * Takes the input geoJson and renders it as an Object3D.
-	   *
-	   * @param geoJson the geoJson object to render
-	   * @param renderOptions object containing parameters for rendering
-	   * @param renderOptions.projectionName the name of a projection from d3-geo or d3-geo-projection
-	   * @param renderOptions.meshType the type of Object3D to render -- 'line' or 'shape'
-	   * @param renderOptions.material the THREE.Material to use in the resulting Object3D
-	   * @param renderOptions.height the height in A-Frame units
-	   * @param renderOptions.width the width in A-Frame units
-	   * @param renderOptions.isCCW true if shapes are defined counter-clockwise and holes defined clockwise; false for the reverse
-	   * @return THREE.Object3D
-	   */
-	  renderGeoJson: function (geoJson, renderOptions) {
-	    var projectionName = renderOptions.projectionName;
-	    var height = renderOptions.height;
-	    var width = renderOptions.width;
-	    var meshType = renderOptions.meshType;
-	    var material = renderOptions.material;
-	    var isCCW = renderOptions.isCCW;
+	  line: {
+	    render: render,
+	    renderToContext: renderToContext,
+	    createGeometry: function createGeometry (mapRenderContext) {
+	      var lineGeometry = new THREE.BufferGeometry();
+	      var vertices = mapRenderContext.toVertices();
+	      lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+	      return lineGeometry;
+	    },
+	    createMesh: function createMesh (geometry, material) {
+	      return new THREE.LineSegments(geometry, material);
+	    }
+	  },
 
-	    var projection = projectionLib.getFittedProjection(projectionName, geoJson, height, width);
-	    var shapePath = new THREE.ShapePath();
-	    var mapRenderContext = new ThreeJSRenderContext(shapePath);
-	    var mapPath = d3.geoPath(projection, mapRenderContext);
-	    mapPath(geoJson);
+	  shape: {
+	    render: render,
+	    renderToContext: renderToContext,
+	    createGeometry: function createGeometry (mapRenderContext, isCCW) {
+	      const shapes = mapRenderContext.toShapes(isCCW);
+	      return new THREE.ShapeBufferGeometry(shapes);
+	    },
+	    createMesh: function createMesh (geometry, material) {
+	      return new THREE.Mesh(geometry, material);
+	    }
+	  },
 
-	    switch (meshType) {
-	      case 'line':
-	        var lineGeometry = new THREE.BufferGeometry();
-	        var vertices = mapRenderContext.toVertices();
-	        lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-	        return new THREE.LineSegments(lineGeometry, material);
-	      case 'shape':
-	        // TODO: pass isCCW as an option
-	        const shapes = mapRenderContext.toShapes(isCCW);
-	        var shapeGeometry = new THREE.ShapeBufferGeometry(shapes);
-	        return new THREE.Mesh(shapeGeometry, material);
-	      case 'extrude':
-	        const extrudeSettings = {
-	          amount: 1,
-	          bevelEnabled: false
-	        };
-	        const extShapes = mapRenderContext.toShapes(isCCW);
-	        var extGeometry = new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
-	        return new THREE.Mesh(extGeometry, material);
-	      default:
-	        throw new Error('Unsupported meshType: ' + meshType);
+	  extrude: {
+	    render: render,
+	    renderToContext: renderToContext,
+	    createGeometry: function createGeometry (mapRenderContext, isCCW) {
+	      const extrudeSettings = {
+	        amount: 1,
+	        bevelEnabled: false
+	      };
+	      const extShapes = mapRenderContext.toShapes(isCCW);
+	      return new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
+	    },
+	    createMesh: function createMesh (geometry, material) {
+	      return new THREE.Mesh(geometry, material);
 	    }
 	  }
 	};
@@ -3899,9 +3927,105 @@
 
 /***/ }),
 /* 5 */
+/***/ (function(module, exports) {
+
+	/**
+	 * A rendering context that can be used with d3-geo to convert geoJSON
+	 * into data that can be used by THREE.js.  To do this, it implements
+	 * the d3-geo required subset of the CanvasRenderingContext2D API.
+	 *
+	 * @param shapePath a THREE.ShapePath that will hold the rendered data
+	 * @constructor
+	 * @see https://github.com/d3/d3-geo#path_context
+	 */
+	function ThreeJSRenderContext (shapePath) {
+	  this.shapePath = shapePath;
+	}
+
+	ThreeJSRenderContext.prototype.beginPath = function beginPath () {
+	  // no-op
+	};
+
+	ThreeJSRenderContext.prototype.moveTo = function moveTo (x, y) {
+	  this.shapePath.moveTo(x, y);
+	};
+
+	ThreeJSRenderContext.prototype.lineTo = function lineTo (x, y) {
+	  this.shapePath.lineTo(x, y);
+	};
+
+	ThreeJSRenderContext.prototype.arc = function arc (x, y, radius, startAngle, endAngle) {
+	  this.shapePath.currentPath.arc(x, y, radius, startAngle, endAngle);
+	};
+
+	ThreeJSRenderContext.prototype.closePath = function closePath () {
+	  this.shapePath.currentPath.closePath();
+	};
+
+	/**
+	 * Exports the data stored in this context into an array of Shapes.
+	 * By default solid shapes are defined clockwise (CW) and holes are
+	 * defined counterclockwise (CCW). If isCCW is set to true, then those
+	 * are flipped. If the parameter noHoles is set to true then all paths
+	 * are set as solid shapes and isCCW is ignored.
+	 *
+	 * The isCCW flag is important when rendering topoJSON vs. geoJSON.  For
+	 * features smaller than a hemisphere, topoJSON uses clockwise shapes while
+	 * geoJSON uses counterclockwise shapes.  For features larger than a
+	 * hemisphere (such as oceans), the opposite is true.
+	 *
+	 * @param isCCW changes how solids and holes are generated
+	 * @param noHoles whether or not to generate holes
+	 * @return {Array} of THREE.Shape objects
+	 * @see https://github.com/d3/d3-geo for a summary of winding order convention
+	 */
+	ThreeJSRenderContext.prototype.toShapes = function toShapes (isCCW, noHoles) {
+	  return this.shapePath.toShapes(isCCW, noHoles);
+	};
+
+	/**
+	 * Exports the data stored in this context into an array of vertices.  Each
+	 * vertex takes up three positions in the array so it is optimized to populate
+	 * a THREE.BufferGeometry.  The z parameter can be used to control the position of
+	 * the vertices on the z-axis.
+	 *
+	 * @param z optional parameter to set as the z-value for all the vertices produced; 0 will be used if no z is specified
+	 * @return {Array} of numbers
+	 */
+	ThreeJSRenderContext.prototype.toVertices = function toVertices (z) {
+	  var verticesForShape = [];
+	  var zVal = z || 0;
+	  this.shapePath.subPaths.forEach(function (path) {
+	    path.curves.forEach(function (curve) {
+	      if (curve.isLineCurve) {
+	        verticesForShape.push(curve.v1.x);
+	        verticesForShape.push(curve.v1.y);
+	        verticesForShape.push(zVal);
+	        verticesForShape.push(curve.v2.x);
+	        verticesForShape.push(curve.v2.y);
+	        verticesForShape.push(zVal);
+	      } else {
+	        curve.getPoints().forEach(function (point) {
+	          verticesForShape.push(point.x);
+	          verticesForShape.push(point.y);
+	          verticesForShape.push(zVal);
+	        });
+	      }
+	    });
+	  });
+	  return verticesForShape;
+	};
+
+	module.exports = {
+	  ThreeJSRenderContext: ThreeJSRenderContext
+	};
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var d3 = Object.assign({}, __webpack_require__(6), __webpack_require__(3), __webpack_require__(13));
+	var d3 = Object.assign({}, __webpack_require__(7), __webpack_require__(3), __webpack_require__(14));
 
 	module.exports = {
 	  /**
@@ -3960,12 +4084,12 @@
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-scale/ Version 1.0.7. Copyright 2017 Mike Bostock.
 	(function (global, factory) {
-		 true ? factory(exports, __webpack_require__(4), __webpack_require__(7), __webpack_require__(8), __webpack_require__(10), __webpack_require__(11), __webpack_require__(12), __webpack_require__(9)) :
+		 true ? factory(exports, __webpack_require__(4), __webpack_require__(8), __webpack_require__(9), __webpack_require__(11), __webpack_require__(12), __webpack_require__(13), __webpack_require__(10)) :
 		typeof define === 'function' && define.amd ? define(['exports', 'd3-array', 'd3-collection', 'd3-interpolate', 'd3-format', 'd3-time', 'd3-time-format', 'd3-color'], factory) :
 		(factory((global.d3 = global.d3 || {}),global.d3,global.d3,global.d3,global.d3,global.d3,global.d3,global.d3));
 	}(this, (function (exports,d3Array,d3Collection,d3Interpolate,d3Format,d3Time,d3TimeFormat,d3Color) { 'use strict';
@@ -4891,7 +5015,7 @@
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-collection/ Version 1.0.4. Copyright 2017 Mike Bostock.
@@ -5114,12 +5238,12 @@
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-interpolate/ Version 1.1.6. Copyright 2017 Mike Bostock.
 	(function (global, factory) {
-		 true ? factory(exports, __webpack_require__(9)) :
+		 true ? factory(exports, __webpack_require__(10)) :
 		typeof define === 'function' && define.amd ? define(['exports', 'd3-color'], factory) :
 		(factory((global.d3 = global.d3 || {}),global.d3));
 	}(this, (function (exports,d3Color) { 'use strict';
@@ -5665,7 +5789,7 @@
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-color/ Version 1.0.3. Copyright 2017 Mike Bostock.
@@ -6194,7 +6318,7 @@
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-format/ Version 1.2.1. Copyright 2017 Mike Bostock.
@@ -6531,7 +6655,7 @@
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-time/ Version 1.0.8. Copyright 2017 Mike Bostock.
@@ -6922,12 +7046,12 @@
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-time-format/ Version 2.1.1. Copyright 2017 Mike Bostock.
 	(function (global, factory) {
-		 true ? factory(exports, __webpack_require__(11)) :
+		 true ? factory(exports, __webpack_require__(12)) :
 		typeof define === 'function' && define.amd ? define(['exports', 'd3-time'], factory) :
 		(factory((global.d3 = global.d3 || {}),global.d3));
 	}(this, (function (exports,d3Time) { 'use strict';
@@ -7616,7 +7740,7 @@
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-geo-projection/ Version 2.3.2. Copyright 2017 Mike Bostock.
@@ -12075,99 +12199,6 @@
 	Object.defineProperty(exports, '__esModule', { value: true });
 
 	})));
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports) {
-
-	/**
-	 * A rendering context that can be used with d3-geo to convert geoJSON
-	 * into data that can be used by THREE.js.  To do this, it implements
-	 * the d3-geo required subset of the CanvasRenderingContext2D API.
-	 *
-	 * @param shapePath a THREE.ShapePath that will hold the rendered data
-	 * @constructor
-	 * @see https://github.com/d3/d3-geo#path_context
-	 */
-	function ThreeJSRenderContext(shapePath) {
-	  this.shapePath = shapePath;
-	}
-
-	ThreeJSRenderContext.prototype.beginPath = function beginPath () {
-	  // no-op
-	};
-
-	ThreeJSRenderContext.prototype.moveTo = function moveTo (x, y) {
-	  this.shapePath.moveTo(x, y);
-	};
-
-	ThreeJSRenderContext.prototype.lineTo = function lineTo (x, y) {
-	  this.shapePath.lineTo(x, y);
-	};
-
-	ThreeJSRenderContext.prototype.arc = function arc (x, y, radius, startAngle, endAngle) {
-	  this.shapePath.currentPath.arc(x, y, radius, startAngle, endAngle);
-	};
-
-	ThreeJSRenderContext.prototype.closePath = function closePath () {
-	  this.shapePath.currentPath.closePath();
-	};
-
-	/**
-	 * Exports the data stored in this context into an array of Shapes.
-	 * By default solid shapes are defined clockwise (CW) and holes are
-	 * defined counterclockwise (CCW). If isCCW is set to true, then those
-	 * are flipped. If the parameter noHoles is set to true then all paths
-	 * are set as solid shapes and isCCW is ignored.
-	 *
-	 * The isCCW flag is important when rendering topoJSON vs. geoJSON.  For
-	 * features smaller than a hemisphere, topoJSON uses clockwise shapes while
-	 * geoJSON uses counterclockwise shapes.  For features larger than a
-	 * hemisphere (such as oceans), the opposite is true.
-	 *
-	 * @param isCCW changes how solids and holes are generated
-	 * @param noHoles whether or not to generate holes
-	 * @return {Array} of THREE.Shape objects
-	 * @see https://github.com/d3/d3-geo for a summary of winding order convention
-	 */
-	ThreeJSRenderContext.prototype.toShapes = function toShapes (isCCW, noHoles) {
-	  return this.shapePath.toShapes(isCCW, noHoles);
-	};
-
-	/**
-	 * Exports the data stored in this context into an array of vertices.  Each
-	 * vertex takes up three positions in the array so it is optimized to populate
-	 * a THREE.BufferGeometry.
-	 *
-	 * @return {Array} of numbers
-	 */
-	ThreeJSRenderContext.prototype.toVertices = function toVertices () {
-	  var verticesForShape = [];
-	  this.shapePath.subPaths.forEach(function (path) {
-	    path.curves.forEach(function (curve) {
-	      if (curve.isLineCurve) {
-	        verticesForShape.push(curve.v1.x);
-	        verticesForShape.push(curve.v1.y);
-	        verticesForShape.push(0);
-	        verticesForShape.push(curve.v2.x);
-	        verticesForShape.push(curve.v2.y);
-	        verticesForShape.push(0);
-	      } else {
-	        curve.getPoints().forEach(function (point) {
-	          verticesForShape.push(point.x);
-	          verticesForShape.push(point.y);
-	          verticesForShape.push(0);
-	        });
-	      }
-	    });
-	  });
-	  return verticesForShape;
-	};
-
-	module.exports = {
-	  ThreeJSRenderContext: ThreeJSRenderContext
-	};
 
 
 /***/ }),

@@ -1,4 +1,5 @@
-/* global assert, setup, suite, test */
+/* global assert, suite, test */
+var sinon = require('sinon');
 var ThreeJSRenderContext = require('../../src/renderContext').ThreeJSRenderContext;
 
 suite('ThreeJSRenderContext', function () {
@@ -55,25 +56,32 @@ suite('ThreeJSRenderContext', function () {
       sinon.assert.calledWith(mockShapePath.toShapes, true, true);
       assert.deepEqual(result, mockResult);
     });
-    test('#toVertices', function () {
+    suite('#toVertices', function () {
       var mockShapePath = { subPaths: [
           { curves: [
-              {
-                isLineCurve: true,
-                v1: { x: 1, y: 2 },
-                v2: { x: 3, y: 4 }
-              },
-              {
-                isLineCurve: false,
-                getPoints: function() {
-                  return [ { x: 5, y: 6 }]
-                }
+            {
+              isLineCurve: true,
+              v1: { x: 1, y: 2 },
+              v2: { x: 3, y: 4 }
+            },
+            {
+              isLineCurve: false,
+              getPoints: function () {
+                return [ { x: 5, y: 6 } ];
               }
-            ] }
-        ] };
-      var context = new ThreeJSRenderContext(mockShapePath);
-      var vertices = context.toVertices();
-      assert.deepEqual(vertices, [1, 2, 0, 3, 4, 0, 5, 6, 0]);
+            }
+          ] }
+      ] };
+      test('produces an array of vertices for all the shapes', function () {
+        var context = new ThreeJSRenderContext(mockShapePath);
+        var vertices = context.toVertices();
+        assert.deepEqual(vertices, [1, 2, 0, 3, 4, 0, 5, 6, 0]);
+      });
+      test('when a z-value is provided, it produces an array of vertices that include the given z-value', function () {
+        var context = new ThreeJSRenderContext(mockShapePath);
+        var vertices = context.toVertices(9);
+        assert.deepEqual(vertices, [1, 2, 9, 3, 4, 9, 5, 6, 9]);
+      });
     });
   });
 });

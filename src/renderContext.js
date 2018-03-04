@@ -7,7 +7,7 @@
  * @constructor
  * @see https://github.com/d3/d3-geo#path_context
  */
-function ThreeJSRenderContext(shapePath) {
+function ThreeJSRenderContext (shapePath) {
   this.shapePath = shapePath;
 }
 
@@ -55,26 +55,29 @@ ThreeJSRenderContext.prototype.toShapes = function toShapes (isCCW, noHoles) {
 /**
  * Exports the data stored in this context into an array of vertices.  Each
  * vertex takes up three positions in the array so it is optimized to populate
- * a THREE.BufferGeometry.
+ * a THREE.BufferGeometry.  The z parameter can be used to control the position of
+ * the vertices on the z-axis.
  *
+ * @param z optional parameter to set as the z-value for all the vertices produced; 0 will be used if no z is specified
  * @return {Array} of numbers
  */
-ThreeJSRenderContext.prototype.toVertices = function toVertices () {
+ThreeJSRenderContext.prototype.toVertices = function toVertices (z) {
   var verticesForShape = [];
+  var zVal = z || 0;
   this.shapePath.subPaths.forEach(function (path) {
     path.curves.forEach(function (curve) {
       if (curve.isLineCurve) {
         verticesForShape.push(curve.v1.x);
         verticesForShape.push(curve.v1.y);
-        verticesForShape.push(0);
+        verticesForShape.push(zVal);
         verticesForShape.push(curve.v2.x);
         verticesForShape.push(curve.v2.y);
-        verticesForShape.push(0);
+        verticesForShape.push(zVal);
       } else {
         curve.getPoints().forEach(function (point) {
           verticesForShape.push(point.x);
           verticesForShape.push(point.y);
-          verticesForShape.push(0);
+          verticesForShape.push(zVal);
         });
       }
     });
