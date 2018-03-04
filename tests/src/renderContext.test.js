@@ -56,7 +56,7 @@ suite('ThreeJSRenderContext', function () {
       sinon.assert.calledWith(mockShapePath.toShapes, true, true);
       assert.deepEqual(result, mockResult);
     });
-    test('#toVertices', function () {
+    suite('#toVertices', function () {
       var mockShapePath = { subPaths: [
           { curves: [
             {
@@ -72,9 +72,16 @@ suite('ThreeJSRenderContext', function () {
             }
           ] }
       ] };
-      var context = new ThreeJSRenderContext(mockShapePath);
-      var vertices = context.toVertices();
-      assert.deepEqual(vertices, [1, 2, 0, 3, 4, 0, 5, 6, 0]);
+      test('produces an array of vertices for all the shapes', function () {
+        var context = new ThreeJSRenderContext(mockShapePath);
+        var vertices = context.toVertices();
+        assert.deepEqual(vertices, [1, 2, 0, 3, 4, 0, 5, 6, 0]);
+      });
+      test('when a z-value is provided, it produces an array of vertices that include the given z-value', function () {
+        var context = new ThreeJSRenderContext(mockShapePath);
+        var vertices = context.toVertices(9);
+        assert.deepEqual(vertices, [1, 2, 9, 3, 4, 9, 5, 6, 9]);
+      });
     });
   });
 });
