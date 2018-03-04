@@ -29,7 +29,8 @@ function renderToContext (geoJson, projection) {
  * @return THREE.Object3D
  */
 function render (geoJson, projection, isCCW, material) {
-  var geometry = this.createGeometry(geoJson, projection, isCCW);
+  var mapRenderContext = this.renderToContext(geoJson, projection);
+  var geometry = this.createGeometry(mapRenderContext, isCCW);
   return this.createMesh(geometry, material);
 }
 
@@ -37,8 +38,7 @@ module.exports = {
   line: {
     render: render,
     renderToContext: renderToContext,
-    createGeometry: function createGeometry (geoJson, projection) {
-      var mapRenderContext = this.renderToContext(geoJson, projection);
+    createGeometry: function createGeometry (mapRenderContext) {
       var lineGeometry = new THREE.BufferGeometry();
       var vertices = mapRenderContext.toVertices();
       lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -52,8 +52,7 @@ module.exports = {
   shape: {
     render: render,
     renderToContext: renderToContext,
-    createGeometry: function createGeometry (geoJson, projection, isCCW) {
-      var mapRenderContext = this.renderToContext(geoJson, projection);
+    createGeometry: function createGeometry (mapRenderContext, isCCW) {
       const shapes = mapRenderContext.toShapes(isCCW);
       return new THREE.ShapeBufferGeometry(shapes);
     },
@@ -65,8 +64,7 @@ module.exports = {
   extrude: {
     render: render,
     renderToContext: renderToContext,
-    createGeometry: function createGeometry (geoJson, projection, isCCW) {
-      var mapRenderContext = this.renderToContext(geoJson, projection);
+    createGeometry: function createGeometry (mapRenderContext, isCCW) {
       const extrudeSettings = {
         amount: 1,
         bevelEnabled: false
