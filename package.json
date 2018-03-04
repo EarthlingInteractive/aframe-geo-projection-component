@@ -8,6 +8,7 @@
     "dev": "budo index.js:dist/aframe-geo-projection-component.min.js --port 7000 --live --open",
     "dist": "webpack index.js dist/aframe-geo-projection-component.js && webpack -p index.js dist/aframe-geo-projection-component.min.js",
     "lint": "semistandard -v | snazzy",
+    "lint:fix": "semistandard --fix -v | snazzy",
     "prepublish": "npm run dist",
     "ghpages": "ghpages",
     "start": "npm run dev",
