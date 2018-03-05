@@ -15,11 +15,21 @@
 <script>
   AFRAME.registerComponent('data-for-map', {
     dependencies: ['geo-projection'],
+    schema: {
+      maxExtrudeHeight: {
+        default: 2
+      }
+    },
     init: function () {
       this.geoProjectionComponent = this.el.components['geo-projection'];
 
       // Wait for geoJson to finish loading to avoid race conditions
       this.el.addEventListener('geo-src-loaded', this.geoJsonReady.bind(this));
+    },
+    update: function (oldData) {
+      if (this.data.maxExtrudeHeight !== oldData.maxExtrudeHeight) {
+        this.geoJsonReady();
+      }
     },
     geoJsonReady: function () {
       // Override the render method of geoProjectionComponent with the custom one on this component
@@ -51,12 +61,12 @@
         accum[fipsCode] = d.population;
         return accum;
       }, {});
-      this.geoProjectionComponent.render(populationByFipsCode, maxPopulation);
+      this.geoProjectionComponent.render(populationByFipsCode, maxPopulation, this.data.maxExtrudeHeight);
     },
     // Custom rendering function that does all the work
     // Note that the `this` for this function is the geoProjectionComponent instead of this data-for-map component
     // So that we can use all the functions and data of the geoProjectionComponent to help with rendering
-    render: function (populationByFipsCode, maxPopulation) {
+    render: function (populationByFipsCode, maxPopulation, maxExtrudeHeight) {
       if (!populationByFipsCode) return;
       var material = this.el.components.material.material;
       var extrudeGeometry = null;
@@ -65,7 +75,7 @@
       // extrusion height for each based on the population.
       this.geoJson.features.forEach(function (feature) {
         var population = populationByFipsCode[feature.id];
-        var extrudeAmount = (population / maxPopulation) * 1.5;
+        var extrudeAmount = (population / maxPopulation) * maxExtrudeHeight;
         const extrudeSettings = {
           amount: extrudeAmount,
           bevelEnabled: false
