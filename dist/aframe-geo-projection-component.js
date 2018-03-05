@@ -102,9 +102,12 @@
 	   */
 	  update: function (oldData) {
 	    this.renderer = renderers[this.data.meshType];
-	    var src = this.data.src;
-	    if (src && src !== oldData.src) {
-	      this.loader.load(src, this.onSrcLoaded.bind(this));
+	    if (!this.data.src) {
+	      return;
+	    }
+	    var differences = AFRAME.utils.diff(oldData, this.data);
+	    if (Object.keys(differences).length > 0) {
+	      this.loader.load(this.data.src, this.onSrcLoaded.bind(this));
 	    }
 	  },
 

@@ -3,6 +3,7 @@ require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
 var geoProjectionComponent = require('../index.js');
+var renderers = require('../src/renderers');
 var entityFactory = require('./helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
@@ -119,8 +120,14 @@ suite('geo-projection component', function () {
   });
 
   suite('#update', function () {
-    suite('when the src property changes', function () {
-      test('loads the new src asset', function () {
+    test('sets the renderer', function () {
+      el.setAttribute('geo-projection', {
+        meshType: 'shape'
+      });
+      assert.equal(component.renderer, renderers.shape);
+    });
+    suite('when a property changes', function () {
+      test('reloads the src data and re-renders', function () {
         var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
         var loaderStub = sandbox.stub(THREE, 'FileLoader');
         loaderStub.returns(fakeLoader);
@@ -129,15 +136,15 @@ suite('geo-projection component', function () {
 
         component.init();
         el.setAttribute('geo-projection', {
-          src: 'assets/test.json'
+          src: '/base/tests/assets/test.json'
         });
 
         sinon.assert.calledOnce(component.update);
-        sinon.assert.calledWith(fakeLoader.load, 'assets/test.json', component.onSrcLoaded);
+        sinon.assert.calledWith(fakeLoader.load, '/base/tests/assets/test.json', component.onSrcLoaded);
       });
     });
-    suite('when the src property has not changed', function () {
-      test('does not re-load the src asset', function () {
+    suite('when the src property is blank', function () {
+      test('does not re-load the src data', function () {
         var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
         var loaderStub = sandbox.stub(THREE, 'FileLoader');
         loaderStub.returns(fakeLoader);
@@ -145,6 +152,7 @@ suite('geo-projection component', function () {
 
         component.init();
         el.setAttribute('geo-projection', {
+          src: '',
           width: 2
         });
 

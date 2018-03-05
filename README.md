@@ -9,8 +9,9 @@ An [A-Frame](https://aframe.io) component for creating maps in [WebVR](https://w
 
 [![The World in VR](./examples/img/shape.png)](https://earthlinginteractive.github.io/aframe-geo-projection-component/)
 
-### API
+### Geo Projection Component API
 
+#### Component Schema
 | Property | Description | Default Value |
 | -------- | ----------- | ------------- |
 | src      | path to a GeoJson or Topojson asset | None              |
@@ -24,6 +25,14 @@ An [A-Frame](https://aframe.io) component for creating maps in [WebVR](https://w
 
 Note that it is also required to set a material on the component.  For a meshType of "shape", you can use the standard (default) shader
 or the flat shader.  For a meshType of "line", this library provides a custom shader for a LineBasicMaterial.  See [below](#linebasicmaterial-shader-api) for details.
+
+#### Events
+| Type | Description | default object |
+| -------- | ----------- | ------------- |
+| geo-src-loaded | Fired when the GeoJson or TopoJson specified in the src attribute has finished loading and the component has completed its first render cycle. | `geoProjectionComponent`: A reference to the geo-projection-component that trigger the event. |
+
+#### Customization
+To build a custom visualization of geo data, the recommended way is to create a new component responsible for loading the data and performing the rendering.  This component should wait for the geo-src-loaded event before doing its work to avoid race conditions.  The ["U.S. Population by State in 2017" example](./examples/fancy/us-population.html) shows an example of how to build a visualization using a custom component.
 
 #### isCCW and its relation to geojson and topojson
 
@@ -40,7 +49,7 @@ To summarize:
 
 See https://github.com/d3/d3-geo for a discussion of winding order conventions.
 
-#### LineBasicMaterial shader API
+### LineBasicMaterial shader API
 For a meshType of "line", this library provides a custom shader for a LineBasicMaterial.  To use it,
 set the shader to `linebasic`
 ```html
