@@ -5,6 +5,8 @@
     <title>A-Frame Geo Projection Component - U.S. Population 2017 (est.)</title>
     <meta name="description" content="Visualization of estimated U.S. population by state in 2017"></meta>
     <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v3.12.4/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/super-hands@2.1.0/dist/super-hands.min.js"></script>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://d3js.org/d3-queue.v3.js"></script>
     <script src="../../dist/aframe-geo-projection-component.min.js"></script>
@@ -107,7 +109,7 @@
     <a-assets>
         <a-asset-item id="json-us" src="https://unpkg.com/us-atlas@1/us/10m.json" />
     </a-assets>
-
+    <a-sky color="#ECECEC"></a-sky>
     <a-entity id="map"
               rotation="-90 0 0"
               material="color: #A46C39;"
@@ -123,6 +125,10 @@
                   width: 20;"
     >
     </a-entity>
+    <a-locomotor>
+        <a-entity hand-controls="left" super-hands></a-entity>
+        <a-entity hand-controls="right" super-hands></a-entity>
+    </a-locomotor>
 </a-scene>
 </body>
 </html>
