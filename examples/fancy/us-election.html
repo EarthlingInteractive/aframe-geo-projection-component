@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>A-Frame Geo Projection Component - Popular Vote in U.S. Presidential Election 2016</title>
+    <meta name="description" content="Visualization of the popular vote for U.S. President in 2016"></meta>
+    <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v3.12.4/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/super-hands@2.1.0/dist/super-hands.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-queue.v3.js"></script>
+    <script src="../../dist/aframe-geo-projection-component.min.js"></script>
+</head>
+<body>
+<script>
+  var DARK_GRAY = 0x56565a;
+  var REPUBLICAN_RED = 0xE91D0E;
+  var DEMOCRAT_BLUE = 0x232066;
+  var LIBERTARIAN_GOLD = 0xE5C601;
+  var GREEN_PARTY_GREEN = 0x00A95C;
+  var INDEPENDENT_PURPLE = 0x9400D3;
+
+  var createCylinders = function (height, stateShapes, percentage, zPosition, geometry) {
+    var shapeGeometry = new THREE.ShapeGeometry(stateShapes);
+    shapeGeometry.computeBoundingBox();
+    var size = shapeGeometry.boundingBox.getSize();
+    var center = shapeGeometry.boundingBox.getCenter();
+    var radius = (d3.min([size.x, size.y])/3) * percentage;
+    var cylinderGeometry = new THREE.CylinderGeometry(radius, radius, height, 24);
+    cylinderGeometry.rotateX(Math.PI/2);
+    cylinderGeometry.translate(center.x, center.y, zPosition + height/2);
+    geometry.merge(cylinderGeometry);
+  };
+  var createExtrudedAndScaledGeometry = function (height, stateShapes, percentage, zPosition, extrudeGeometry) {
+    const extrudeSettings = {
+      amount: height,
+      bevelEnabled: false
+    };
+
+    var extrudedFeatureGeometry = new THREE.ExtrudeGeometry(stateShapes, extrudeSettings);
+    extrudedFeatureGeometry.computeBoundingBox();
+    var center = extrudedFeatureGeometry.boundingBox.getCenter();
+    extrudedFeatureGeometry.center();
+    extrudedFeatureGeometry.scale(percentage, percentage, 1);
+    extrudedFeatureGeometry.translate(center.x, center.y, center.z + zPosition);
+    extrudeGeometry.merge(extrudedFeatureGeometry);
+  };
+  var createExtrudedAndScaledGeometryPerShape = function (height, stateShapes, percentage, zPosition, extrudeGeometry) {
+    const extrudeSettings = {
+      amount: height,
+      bevelEnabled: false
+    };
+    stateShapes.forEach(function (stateShape) {
+      var extrudedFeatureGeometry = new THREE.ExtrudeGeometry(stateShape, extrudeSettings);
+      extrudedFeatureGeometry.computeBoundingBox();
+      var center = extrudedFeatureGeometry.boundingBox.getCenter();
+      extrudedFeatureGeometry.center();
+      extrudedFeatureGeometry.scale(percentage, percentage, 1);
+      extrudedFeatureGeometry.translate(center.x, center.y, center.z + zPosition);
+
+      // if the scaled-down shape is too small, then don't render it
+      // var size = extrudedFeatureGeometry.boundingBox.getSize();
+      // if (size.x < 0.02 || size.y < 0.02) {
+      //   return;
+      // }
+
+      extrudeGeometry.merge(extrudedFeatureGeometry);
+    });
+  };
+
+  AFRAME.registerComponent('data-for-map', {
+    dependencies: ['geo-projection'],
+    schema: {
+      maxExtrudeHeight: {
+        default: 4
+      },
+      geometryType: {
+        oneOf: ['shapePerState', 'manyShapesPerState', 'cylinder'],
+        default: 'cylinder'
+      }
+    },
+    init: function () {
+      this.geoProjectionComponent = this.el.components['geo-projection'];
+
+      // Wait for geoJson to finish loading to avoid race conditions
+      this.el.addEventListener('geo-src-loaded', this.geoJsonReady.bind(this));
+    },
+    update: function (oldData) {
+      if (this.data.maxExtrudeHeight !== oldData.maxExtrudeHeight ||
+          this.data.geometryType !== oldData.geometryType) {
+        this.geoJsonReady();
+      }
+    },
+    geoJsonReady: function () {
+      // Override the render method of geoProjectionComponent with the custom one on this component
+      // this allows us to push the data that needs to be visualized into the rendering pipeline
+      this.geoProjectionComponent.render = this.render;
+
+      // Now kick off loading the data
+      d3.queue()
+        .defer(d3.csv, '../data/us-presidential-election-CNN-16Feb2017.csv', function (d) {
+          return {
+            fips: d.fips,
+            state: d.state,
+            clinton: +d.clinton,
+            trump: +d.trump,
+            johnson: +d.johnson,
+            stein: +d.stein,
+            mcmullin: +d.mcmullin,
+            totalVoters: (+d.clinton + +d.trump + +d.johnson + +d.stein + +d.mcmullin),
+            nonVoters: (+d.eligible_population - +d.clinton - +d.trump - +d.johnson - +d.stein - +d.mcmullin),
+            electoralVotes: +d.electoral_votes,
+            eligiblePopulation: +d.eligible_population
+          }
+        })
+        .await(this.onDataLoaded.bind(this));
+    },
+    onDataLoaded: function(error, votingData) {
+      if (error) throw error;
+      var votesByFipsCode = votingData.reduce(function (accum, d) {
+        accum[d.fips] = d;
+        return accum;
+      }, {});
+
+      // Determine the vertical scale for the entire country using the state with the largest number of total voters
+      // as equaling the max extrude height
+      var maxTotalVoters = d3.max(votingData, function(d) { return d.totalVoters; });
+      const extrudeScale = d3.scaleLinear()
+        .domain([0, maxTotalVoters])
+        .range([0, this.data.maxExtrudeHeight]);
+
+      this.geoProjectionComponent.render(votesByFipsCode, extrudeScale, this.data.geometryType);
+    },
+    // Custom rendering function that does all the work
+    // Note that the `this` for this function is the geoProjectionComponent instead of this data-for-map component
+    // So that we can use all the functions and data of the geoProjectionComponent to help with rendering
+    render: function (votesByFipsCode, extrudeScale, geometryType) {
+      if (!votesByFipsCode || !this.geoJson) return;
+      var candidateLayers = {
+        clinton: {
+          geometry: new THREE.Geometry(),
+          color: DEMOCRAT_BLUE
+        },
+        trump: {
+          geometry: new THREE.Geometry(),
+          color: REPUBLICAN_RED
+        },
+        stein: {
+          geometry: new THREE.Geometry(),
+          color: GREEN_PARTY_GREEN
+        },
+        johnson: {
+          geometry: new THREE.Geometry(),
+          color: LIBERTARIAN_GOLD
+        },
+        mcmullin: {
+          geometry: new THREE.Geometry(),
+          color: INDEPENDENT_PURPLE
+        }
+      };
+      // Split the geoJson into features and render each one individually so that we can set a different
+      // extrusion height for each based on the population.
+      this.geoJson.features.forEach(function (feature) {
+        var votingData = votesByFipsCode[feature.id];
+        var mapRenderContext = this.renderer.renderToContext(feature, this.projection);
+        var stateShapes = mapRenderContext.toShapes(this.data.isCCW);
+
+        var candidatesOrderedByVoteCount = Object.keys(votingData)
+          .filter(function (key) { return ['clinton', 'trump', 'johnson', 'stein', 'mcmullin'].indexOf(key) !== -1; })
+          .sort(function (a, b) { return votingData[a] <= votingData[b]; });
+
+        var totalVotes = votingData.totalVoters;
+        var zPosition = 0;
+        candidatesOrderedByVoteCount.forEach(function (candidate) {
+          var candidateVotes = votingData[candidate];
+          if (!candidateVotes || candidateVotes <= 0) {
+            return;
+          }
+          var percentage = (candidateVotes / totalVotes);
+          var height = extrudeScale(candidateVotes);
+          var extrudeGeometry = candidateLayers[candidate].geometry;
+          switch (geometryType) {
+            case 'shapePerState':
+              createExtrudedAndScaledGeometry(height, stateShapes, percentage, zPosition, extrudeGeometry);
+              break;
+            case 'manyShapesPerState':
+              createExtrudedAndScaledGeometryPerShape(height, stateShapes, percentage, zPosition, extrudeGeometry);
+              break;
+            case 'cylinder':
+              createCylinders(height, stateShapes, percentage, zPosition, extrudeGeometry);
+              break;
+          }
+          zPosition += height;
+        });
+      }.bind(this));
+
+      Object.keys(candidateLayers).forEach(function (candidate) {
+        var layer = candidateLayers[candidate];
+        // Convert the extrude geometry into a buffer geometry for better rendering performance
+        var extrudeBufferGeometry = new THREE.BufferGeometry();
+        extrudeBufferGeometry.fromGeometry(layer.geometry);
+
+        var topMaterial = new THREE.MeshBasicMaterial({ color: layer.color });
+        var sideMaterial = new THREE.MeshStandardMaterial({ color: layer.color });
+        var extrudedMap = new THREE.Mesh(extrudeBufferGeometry, [topMaterial, sideMaterial]);
+        this.el.setObject3D(candidate, extrudedMap);
+      }.bind(this));
+
+      var mapRenderContextForOutline = this.renderer.renderToContext(this.geoJson, this.projection);
+      var stateOutlineGeometry = new THREE.BufferGeometry();
+      var stateOutlineVertices = mapRenderContextForOutline.toVertices();
+      stateOutlineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(stateOutlineVertices, 3));
+      var stateOutlineMaterial = new THREE.LineBasicMaterial( { color: DARK_GRAY } );
+      var stateOutlines = new THREE.LineSegments(stateOutlineGeometry, stateOutlineMaterial);
+      this.el.setObject3D('lines', stateOutlines);
+    }
+  });
+</script>
+<a-scene>
+    <a-assets>
+        <a-asset-item id="json-us" src="https://unpkg.com/us-atlas@1/us/10m.json" />
+    </a-assets>
+    <a-sky color="#ECECEC"></a-sky>
+    <a-entity id="map"
+              rotation="-90 0 0"
+              material="color: #A46C39;"
+              data-for-map
+              geo-projection="
+                  src: #json-us;
+                  srcType: topojson;
+                  isCCW: false;
+                  projection: geoIdentity;
+                  topologyObject: states;
+                  meshType: line;
+                  height: 10;
+                  width: 20;"
+    >
+    </a-entity>
+    <a-locomotor>
+        <a-entity hand-controls="left" super-hands></a-entity>
+        <a-entity hand-controls="right" super-hands></a-entity>
+    </a-locomotor>
+</a-scene>
+</body>
+</html>
