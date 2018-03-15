@@ -1,5 +1,5 @@
 var sceneBounds = { x: 10, y: 10, z: 10 };
-var attributes = ['geometry', 'position', 'color', 'dynamic-body', 'static-body', 'src'];
+var attributes = ['geometry', 'position', 'color', 'dynamic-body', 'static-body', 'src', 'shadow'];
 var tesselatedTextures = [
 	// 'grass.jpg',
 	'grey-cement-pavers.jpg',
@@ -9,13 +9,25 @@ var tesselatedTextures = [
 	'ivy.jpg',
 	'hedge.jpg',
 	'wood-planks-01.jpg',
-	'wood-parquet-01.jpg'
+	'wood-parquet-01.jpg',
+	'circuit-board-01.jpg',
+	'sand-and-gravel.jpg',
+	'fur-white.jpg',
+	'fur-brown.jpg'
 ];
 var positionRange = {
 	x: [-40, 40],
-	y: [100, 1000],
+	y: [200, 1000],
 	z: [-40, 40]
 };
+
+var allShapesProps = {
+	shadow: {
+		cast: true,
+		receive: true
+	}
+};
+
 var shapeGeoms = {
 	sphere: {
 		radius: [0.25, 8]
@@ -31,7 +43,7 @@ var shapeGeoms = {
 	},
 	cone: {
 		radiusTop: [0.25, 6],
-		radiusButtom: [0.25, 6],
+		radiusBottom: [0.25, 6],
 		height: [1, 8]
 	},
 	dodecahedron: {
@@ -59,7 +71,7 @@ var Shape = function(options) {
 	if (typeof options === 'undefined') {
 		options = {};
 	}
-	Object.assign(this, options);
+	Object.assign(this, options, allShapesProps);
 
 	var shapeTypes = Object.keys(shapeGeoms);
 
