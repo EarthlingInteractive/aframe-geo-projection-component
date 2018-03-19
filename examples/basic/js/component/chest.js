@@ -46,7 +46,7 @@ AFRAME.registerComponent('chest', {
 
 		
 		var boxLid = document.createElement('a-box');
-		boxLid.setAttribute('position', { x: 0, y: 4.5, z: 0 });
+		//boxLid.setAttribute('position', { x: 0, y: -4, z: 0 });
 		boxLid.setAttribute('src', 'assets/tessellated/wood-parquet-01.jpg');
 		boxLid.setAttribute('width', data.width);
 		boxLid.setAttribute('height', data.lidThickness);
@@ -56,9 +56,9 @@ AFRAME.registerComponent('chest', {
 		boxLid.setAttribute('constraint', { 
 			target: `#boxBottom${ts}`,
 			type: 'hinge',
-			pivot: { x: -5, y: -5, z: 0 },
-			axis: { x: 0, y: 0, z: 0 },
-			targetAxis: { x: 0, y: 5, z: 0 }
+			pivot: { x: 0, y: -4.25, z: 0 },
+			axis: { x: -data.width, y: 0, z: 0 },
+			targetAxis: { x: data.width, y: 10, z: 0 }
 		});
 		
 		this.boxBottom = boxBottom;

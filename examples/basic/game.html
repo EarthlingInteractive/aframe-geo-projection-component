@@ -14,7 +14,7 @@
 		<a-entity cubemap="folder: assets/GoldenGateBridge2/" material="shader: flat;"></a-entity>
 
 		<a-entity rotation="0 200 0">
-			<a-entity id="player" physics-body="mass: 100; boundingBox: 1 1.8 1" x-dynamic-body camera look-controls position="-5 15 -5" wasd-controls="fly: false; easing: 5; acceleration: 200;">
+			<a-entity id="player" physics-body="mass: 100; boundingBox: 1 1.8 1" x-dynamic-body camera look-controls position="-5 15 -5" wasd-controls="fly: true; easing: 5; acceleration: 200;">
 				<a-cursor></a-cursor>
 			</a-entity>
 		</a-entity>
@@ -23,10 +23,26 @@
 		<a-entity light="type: point; intensity: 1; distance: 50; decay: 2" position="0 12 0"></a-entity>
 		<a-entity light="type: point; intensity: 1; distance: 50; decay: 2" position="0 10 0"></a-entity>
 		<a-entity chest="open: false; width: 6; height: 6; depth: 6;" position="15 4 15"></a-entity>
-		<!-- <a-entity id="chest1">
-			<a-box position="5 4 5" width="5" height="5" depth="5" src="assets/tessellated/wood-planks-01.jpg" dynamic-body shadow="cast: true; receive: true;"></a-box>
-			<a-box position="5 9 5" width="5" height="1" depth="5" src="assets/tessellated/wood-parquet-01.jpg" dynamic-body shadow="cast: true; receive: true;"></a-box>
-		</a-entity> -->
+		
+		<a-entity position="10 4 10">
+			<a-text value="Hinge" position="0 1.5 0" align="center"></a-text>
+			<a-box id="hinge-target" position="-0.25 1 0.0" color="#777" static-body scale="0.25 0.25 0.25"></a-box>
+			<a-box depth="0.1"
+					color="#F00"
+					position="0.0 1 0.0"
+					scale="0.25 0.25 0.25"
+					dynamic-body
+					constraint="type: hinge;
+								target: #hinge-target;
+								axis: 0 1 0;
+								targetAxis: 0 1 0;
+								pivot: -0.125 0 0;
+								targetPivot: 0.125 0 0.125;">
+			</a-box>
+			<a-box position="0.26 1 0" scale="0.25 0.25 0.25" color="#777" static-body></a-box>
+		</a-entity>
+
+
 		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="2" repeat="30 30" src="assets/tessellated/grass.jpg" static-body shadow="receive: true"></a-box>
 	</a-scene>
 	<script src="js/game.js"></script>
