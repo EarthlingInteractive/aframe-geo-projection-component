@@ -80,7 +80,7 @@ var Shape = function(options) {
 	}
 
 	if (typeof this.color === 'undefined' && typeof this.src === 'undefined') {
-		if (Math.random() < 0.1) {
+		if (Math.random() < 0.6) {
 			this.color = '#'+Math.floor(Math.random()*16777215).toString(16);
 		} else {
 			var src = tesselatedTextures[Math.floor(Math.random() * tesselatedTextures.length)];
@@ -105,7 +105,7 @@ var Shape = function(options) {
 
 	if (typeof this['static-body'] === 'undefined' && typeof this['dynamic-body'] === 'undefined') {
 		this['dynamic-body'] = {
-			mass: 1.5,
+			mass: (Math.random() * 5) + 1,
 			linearDamping: 0.005
 		};
 	}
@@ -145,22 +145,23 @@ var things = [
 var $scene = document.querySelector('a-scene');
 
 var cnt = 0;
-while (cnt++ < 100) {
+while (cnt++ < 200) {
 	var t = new Shape();
 	(function() {
 		var $shape = CreateAFRameEntity(t, $scene);
 		var shapeInterval = ((Math.random() * 2) + 1) * 1000;
-		var shapeImpulse = (Math.random() * 10) + 40
+		var shapeImpulseY = (Math.random() * 10) + 40
+		var shapeImpulseX = (Math.random() * 80) - 40
+		var shapeImpulseZ = (Math.random() * 80) - 40
 		var doBump = () => {
 			if (typeof $shape.body !== 'undefined') {
-				var y = $shape.body.position.y;
+				var y = $shape.body.position.y - $shape.body.boundingRadius;
+				console.log($shape.body);
 				if (y < 5 && y > -5) {
 					try {
 						//console.log($shape.body);
 						
-						$shape.body.applyImpulse(
-							new CANNON.Vec3(0, shapeImpulse, 0)
-						);
+						$shape.body.applyImpulse(new CANNON.Vec3(shapeImpulseX, shapeImpulseY, shapeImpulseZ));
 					} catch (ex) {
 						//console.log(ex);
 					}

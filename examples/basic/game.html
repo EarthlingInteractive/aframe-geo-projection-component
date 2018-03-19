@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>A-Frame - A VR Game For Olds</title>
+    <meta name="description" content="Example of rendering map of flat shapes using Geo Projection component."></meta>
+    <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+	<script src="https://unpkg.com/aframe-physics-system@1.4.0/dist/aframe-physics-system.min.js"></script>
+	<script src="https://unpkg.com/aframe-cubemap-component@0.1.3/dist/aframe-cubemap-component.min.js"></script>
+	<script src="js/component/chest.js"></script>
+  </head>
+  <body>
+    <a-scene id="theScene" physics="debug: true;">
+		<a-entity cubemap="folder: assets/GoldenGateBridge2/" material="shader: flat;"></a-entity>
+
+		<a-entity rotation="0 200 0">
+			<a-entity id="player" physics-body="mass: 100; boundingBox: 1 1.8 1" x-dynamic-body camera look-controls position="-5 15 -5" wasd-controls="fly: false; easing: 5; acceleration: 200;">
+				<a-cursor></a-cursor>
+			</a-entity>
+		</a-entity>
+		<!-- <a-entity light="type: directional; castShadow: true; intensity: 1;" position="1 10 1" geometry="primitive: sphere; radius: 8" material="opacity: 0.0; transparent: true"></a-entity> -->
+		<a-entity light="type: directional; castShadow: true; intensity: 0.25;" position="20 1 20" geometry="primitive: sphere; radius: 3" material="opacity: 0.0; transparent: true"></a-entity>
+		<a-entity light="type: point; intensity: 1; distance: 50; decay: 2" position="0 12 0"></a-entity>
+		<a-entity light="type: point; intensity: 1; distance: 50; decay: 2" position="0 10 0"></a-entity>
+		<a-entity chest="open: false; width: 6; height: 6; depth: 6;" position="15 4 15"></a-entity>
+		<!-- <a-entity id="chest1">
+			<a-box position="5 4 5" width="5" height="5" depth="5" src="assets/tessellated/wood-planks-01.jpg" dynamic-body shadow="cast: true; receive: true;"></a-box>
+			<a-box position="5 9 5" width="5" height="1" depth="5" src="assets/tessellated/wood-parquet-01.jpg" dynamic-body shadow="cast: true; receive: true;"></a-box>
+		</a-entity> -->
+		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="2" repeat="30 30" src="assets/tessellated/grass.jpg" static-body shadow="receive: true"></a-box>
+	</a-scene>
+	<script src="js/game.js"></script>
+  </body>
+</html>
