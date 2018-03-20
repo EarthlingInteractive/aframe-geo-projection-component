@@ -42,7 +42,7 @@ AFRAME.registerComponent('chest', {
 		boxBottom.setAttribute('depth', data.depth);
 		boxBottom.setAttribute('src', 'assets/tessellated/wood-planks-01.jpg');
 		boxBottom.setAttribute('id', `boxBottom${ts}`);
-		boxBottom.setAttribute('dynamic-body', true);
+		boxBottom.setAttribute('static-body', true);
 
 		
 		var boxLid = document.createElement('a-box');
@@ -54,13 +54,21 @@ AFRAME.registerComponent('chest', {
 		boxLid.setAttribute('id', `boxLid${ts}`);
 		boxLid.setAttribute('dynamic-body', true);
 		boxLid.setAttribute('constraint', { 
-			target: `#boxBottom${ts}`,
 			type: 'hinge',
-			pivot: { x: 0, y: -4.25, z: 0 },
-			axis: { x: -data.width, y: 0, z: 0 },
-			targetAxis: { x: data.width, y: 10, z: 0 }
+			target: `#boxBottom${ts}`,
+			axis: { x: data.width, y: 0, z: 0 },
+			targetAxis: { x: data.width, y: 0, z: 0 },
+			pivot: { x: 0, y: 4.25, z: 0 },
+			targetPivot: { x: 0, y: -4.25, z: 0 },
 		});
 		
+		// constraint="type: hinge;
+		// target: #hinge-target;
+		// axis: 0 1 0;
+		// targetAxis: 0 1 0;
+		// pivot: -0.125 0 0;
+		// targetPivot: 0.125 0 0.125;
+
 		this.boxBottom = boxBottom;
 		this.boxLid = boxLid;
 

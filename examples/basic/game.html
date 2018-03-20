@@ -14,7 +14,7 @@
 		<a-entity cubemap="folder: assets/GoldenGateBridge2/" material="shader: flat;"></a-entity>
 
 		<a-entity rotation="0 200 0">
-			<a-entity id="player" physics-body="mass: 100; boundingBox: 1 1.8 1" x-dynamic-body camera look-controls position="-5 15 -5" wasd-controls="fly: true; easing: 5; acceleration: 200;">
+			<a-entity id="player" physics-body="mass: 100; boundingBox: 1 1.8 1" x-dynamic-body camera look-controls position="0 8 0" wasd-controls="fly: true; easing: 10; acceleration: 200;">
 				<a-cursor></a-cursor>
 			</a-entity>
 		</a-entity>
@@ -24,6 +24,23 @@
 		<a-entity light="type: point; intensity: 1; distance: 50; decay: 2" position="0 10 0"></a-entity>
 		<a-entity chest="open: false; width: 6; height: 6; depth: 6;" position="15 4 15"></a-entity>
 		
+		<a-entity position="8 4 8">
+				<a-text value="Hinge 2" position="0 1.5 0" align="center"></a-text>
+				<a-box id="hinge-target2" position="-0.25 1 0.0" color="#777" static-body scale="0.25 0.25 0.25"></a-box>
+				<a-box depth="0.1"
+						color="#F00"
+						position="0.0 2 0.0"
+						scale="0.25 0.25 0.25"
+						dynamic-body
+						constraint="type: hinge;
+									target: #hinge-target2;
+									axis: 1 0 0;
+									targetAxis: 1 0 0;
+									pivot: -0.125 0 0;
+									targetPivot: -0.125 0 0.125;">
+				</a-box>
+			</a-entity>
+
 		<a-entity position="10 4 10">
 			<a-text value="Hinge" position="0 1.5 0" align="center"></a-text>
 			<a-box id="hinge-target" position="-0.25 1 0.0" color="#777" static-body scale="0.25 0.25 0.25"></a-box>
@@ -43,7 +60,7 @@
 		</a-entity>
 
 
-		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="2" repeat="30 30" src="assets/tessellated/grass.jpg" static-body shadow="receive: true"></a-box>
+		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="2" repeat="30 30" src="assets/tessellated/grass.jpg" material="shader: flat;" static-body shadow="receive: true"></a-box>
 	</a-scene>
 	<script src="js/game.js"></script>
   </body>
