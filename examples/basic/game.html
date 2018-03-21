@@ -10,28 +10,40 @@
 	<script src="js/component/chest.js"></script>
   </head>
   <body>
-    <a-scene id="theScene" physics="debug: true;">
+    <a-scene id="theScene" physics="xdebug: true;">
+
+		<a-entity xrotation="0 200 0" look-at="#chest1">
+			<a-entity id="player" physics-body="mass: 100; boundingBox: 1 1.8 1" camera look-controls position="0 5 8" wasd-controls="fly: true; easing: 10; acceleration: 200;">	
+				<a-cursor></a-cursor>	
+			</a-entity>	
+		</a-entity>
+
 		<a-entity cubemap="folder: assets/GoldenGateBridge2/" material="shader: flat;"></a-entity>
-		<!-- <a-entity light="type: directional; castShadow: true; intensity: 1;" position="1 10 1" geometry="primitive: sphere; radius: 8" material="opacity: 0.0; transparent: true"></a-entity> -->
 		<a-entity light="type: directional; castShadow: true; intensity: 0.25;" position="20 1 20" geometry="primitive: sphere; radius: 3" material="opacity: 0.0; transparent: true"></a-entity>
 		<a-entity light="type: point; intensity: 1; distance: 50; decay: 2" position="0 12 0"></a-entity>
 		<a-entity light="type: point; intensity: 1; distance: 50; decay: 2" position="0 10 0"></a-entity>
-		<a-entity id="box1" position="0 1 -2">
+		
+		<a-entity chest="dimension: 3;" id="chest1" material="shader: flat;" position="0 1 -2"></a-entity>
+		<a-entity chest="dimension: 3;" id="chest2" material="shader: flat;" position="-5 1 -2"></a-entity>
+		<a-entity chest="dimension: 3;" id="chest3" material="shader: flat;" position="5 1 -2"></a-entity>
+
+
+
+		<!-- <a-entity id="box1" position="0 1 -2">
 			<a-text value="Hinge" position="0 1.5 0" align="center"></a-text>
 			<a-box id="hinge-target" position="0 0.5 0" color="#777" static-body></a-box>
 			<a-box id="lid" height="0.1"
 					color="#F00"
-					position="0.0 1.05 0.0"
-				   dynamic-body
-				   constraint="type: hinge;
+					dynamic-body
+					constraint="type: hinge;
 								target: #hinge-target;
 								axis: 0 0 1;
 								targetAxis: 0 0 1;
 								pivot: -0.5 -0.05 0;
 								targetPivot: -0.5 0.5 0;">
 			</a-box>
-		</a-entity>
-		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="2" repeat="30 30" src="assets/tessellated/grass.jpg" material="shader: flat;" static-body shadow="receive: true"></a-box>
+		</a-entity> -->
+		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="0.05" repeat="60 60" src="assets/tessellated/grass.jpg" material="shader: flat;" static-body shadow="receive: true"></a-box>
 	</a-scene>
 	<script src="js/game.js"></script>
   </body>

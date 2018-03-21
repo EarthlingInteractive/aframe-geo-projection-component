@@ -3,17 +3,11 @@ AFRAME.registerComponent('chest', {
 		open: {
 			default: false
 		},
-		width: {
-			default: 4
-		},
-		height: {
-			default: 4
-		},
-		depth: {
-			default: 4
+		dimension: {
+			default: 1
 		},
 		lidThickness: {
-			default: 0.5
+			default: 0.1
 		}
 	},
 
@@ -25,9 +19,6 @@ AFRAME.registerComponent('chest', {
 
 
 		var ts = (new Date()).getTime()
-		// this.width = data.width;
-		// this.height = data.height;
-		// this.depth = data.depth;
 
 		console.log(this.el.components);
 
@@ -36,38 +27,53 @@ AFRAME.registerComponent('chest', {
 		//this.el.setAttribute('dynamic-body', true);
 
 		var boxBottom = document.createElement('a-box');
-		boxBottom.setAttribute('position', { x: 0, y: 4, z: 0 });
-		boxBottom.setAttribute('width', data.width);
-		boxBottom.setAttribute('height', data.height);
-		boxBottom.setAttribute('depth', data.depth);
+		boxBottom.setAttribute('position', this.el.components.position.data);
+		boxBottom.setAttribute('width', data.dimension);
+		boxBottom.setAttribute('height', data.dimension);
+		boxBottom.setAttribute('depth', data.dimension);
 		boxBottom.setAttribute('src', 'assets/tessellated/wood-planks-01.jpg');
+		boxBottom.setAttribute('material', { shader: 'flat' });
 		boxBottom.setAttribute('id', `boxBottom${ts}`);
 		boxBottom.setAttribute('static-body', true);
+		boxBottom.setAttribute('physics-body', { mass: 100 });
 
 		
 		var boxLid = document.createElement('a-box');
-		//boxLid.setAttribute('position', { x: 0, y: -4, z: 0 });
-		boxLid.setAttribute('src', 'assets/tessellated/wood-parquet-01.jpg');
-		boxLid.setAttribute('width', data.width);
+		boxLid.setAttribute('material', { shader: 'flat', src: 'assets/tessellated/wood-planks-01.jpg', rotation: { x: 0, y: 90, z: 0 } });
+		boxLid.setAttribute('width', data.dimension);
 		boxLid.setAttribute('height', data.lidThickness);
-		boxLid.setAttribute('depth', data.depth);
+		boxLid.setAttribute('depth', data.dimension);
 		boxLid.setAttribute('id', `boxLid${ts}`);
 		boxLid.setAttribute('dynamic-body', true);
+		boxBottom.setAttribute('physics-body', { mass: 1 });
 		boxLid.setAttribute('constraint', { 
 			type: 'hinge',
 			target: `#boxBottom${ts}`,
-			axis: { x: data.width, y: 0, z: 0 },
-			targetAxis: { x: data.width, y: 0, z: 0 },
-			pivot: { x: 0, y: 4.25, z: 0 },
-			targetPivot: { x: 0, y: -4.25, z: 0 },
+			axis: { x: 0, y: 0, z: data.dimension },
+			targetAxis: { x: 0, y: 0, z: data.dimension },
+			//pivot: { x: -data.dimension / 2, y: Math.max(0.05, -data.dimension * 0.01) + data.lidThickness, z: 0 },
+			pivot: { x: -data.dimension / 2, y: -0.05, z: 0 },
+			targetPivot: { x: -data.dimension / 2, y: data.dimension / 2, z: 0 }
+			// axis: { x: 0, y: 0, z: 1 },
+			// targetAxis: { x: 0, y: 0, z: 1 },
+			// pivot: { x: -0.5, y: -0.05, z: 0 },
+			// targetPivot: { x: -0.5, y: 0.5, z: 0 }
 		});
 		
-		// constraint="type: hinge;
-		// target: #hinge-target;
-		// axis: 0 1 0;
-		// targetAxis: 0 1 0;
-		// pivot: -0.125 0 0;
-		// targetPivot: 0.125 0 0.125;
+		// <a-entity id="box1" position="0 1 -2">
+		// 	<a-text value="Hinge" position="0 1.5 0" align="center"></a-text>
+		// 	<a-box id="hinge-target" position="0 0.5 0" color="#777" static-body></a-box>
+		// 	<a-box id="lid" height="0.1"
+		// 			color="#F00"
+		// 			dynamic-body
+		// 			constraint="type: hinge;
+		// 						target: #hinge-target;
+		// 						axis: 0 0 1;
+		// 						targetAxis: 0 0 1;
+		// 						pivot: -0.5 -0.05 0;
+		// 						targetPivot: -0.5 0.5 0;">
+		// 	</a-box>
+		// </a-entity>
 
 		this.boxBottom = boxBottom;
 		this.boxLid = boxLid;
