@@ -14,39 +14,34 @@ AFRAME.registerComponent('chest', {
 	update: function () {
 		var object3D = this.el.object3D;
 		var data = this.data;
-		this.el.setAttribute('position', this.el.components.position.data);
 
-		// var boxBottom = document.createElement('a-box');
-		// boxBottom.setAttribute('position', this.el.components.position.data);
-		// boxBottom.setAttribute('width', data.dimension);
-		// boxBottom.setAttribute('height', data.dimension);
-		// boxBottom.setAttribute('depth', data.dimension);
-		// boxBottom.setAttribute('src', 'assets/tessellated/wood-planks-01.jpg');
-		// boxBottom.setAttribute('material', { shader: 'flat' });
-		// boxBottom.setAttribute('static-body', true);
-		// boxBottom.setAttribute('physics-body', { mass: 100 });
+		var pos = this.el.components.position.data;
+
+		this.el.setAttribute('position', pos);
 
 		var boxBack = document.createElement('a-box');
-		boxBack.setAttribute('position', this.el.components.position.data);
+		boxBack.setAttribute('position', pos);
 		boxBack.setAttribute('width', data.dimension);
 		boxBack.setAttribute('height', data.dimension);
 		boxBack.setAttribute('depth', data.dimension);
-		boxBack.setAttribute('src', 'assets/tessellated/wood-planks-01.jpg');
-		boxBack.setAttribute('material', { shader: 'flat' });
-		boxBack.setAttribute('static-body', true);
+		boxBack.setAttribute('material', { shader: 'flat', 'src': 'assets/tessellated/wood-planks-01.jpg' });
+		boxBack.setAttribute('dynamic-body', true);
 		boxBack.setAttribute('physics-body', { mass: 10000 });
-
 		
 		var boxLid = document.createElement('a-box');
-		boxLid.setAttribute('material', { shader: 'flat', src: 'assets/tessellated/wood-planks-01.jpg', rotation: { x: 0, y: 90, z: 0 } });
+		var lidPos = Object.assign({}, pos);
+		lidPos.y += data.lidThickness + 0.01;
+		boxLid.setAttribute('material', { shader: 'flat', src: 'assets/tessellated/wood-planks-02.jpg', rotation: { x: 0, y: 90, z: 0 } });
 		boxLid.setAttribute('width', data.dimension);
 		boxLid.setAttribute('height', data.lidThickness);
 		boxLid.setAttribute('depth', data.dimension);
 		boxLid.setAttribute('dynamic-body', true);
+		boxLid.setAttribute('position', lidPos);
 		boxLid.setAttribute('physics-body', { mass: 1 });
 		boxLid.setAttribute('constraint', { 
 			type: 'hinge',
 			target: boxBack,
+			maxForce: 10,
 			axis: { x: 0, y: 0, z: data.dimension },
 			targetAxis: { x: 0, y: 0, z: data.dimension },
 			pivot: { x: -data.dimension / 2, y: -0.05, z: 0 },

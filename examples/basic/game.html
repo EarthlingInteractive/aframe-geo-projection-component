@@ -5,7 +5,7 @@
     <title>A-Frame - A VR Game For Olds</title>
     <meta name="description" content="Example of rendering map of flat shapes using Geo Projection component."></meta>
     <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
-	<script src="https://unpkg.com/aframe-physics-system@1.4.0/dist/aframe-physics-system.min.js"></script>
+	<script src="https://unpkg.com/aframe-physics-system@3.0.2/dist/aframe-physics-system.min.js"></script>
 	<script src="https://unpkg.com/aframe-cubemap-component@0.1.3/dist/aframe-cubemap-component.min.js"></script>
 	<script src="js/component/chest.js"></script>
   </head>
@@ -26,7 +26,7 @@
 		<a-entity chest="dimension: 3;" id="chest1" material="shader: flat;" position="0 1 -2"></a-entity>
 		<a-entity chest="dimension: 3;" id="chest2" material="shader: flat;" position="-5 1 -2"></a-entity>
 		<a-entity chest="dimension: 3;" id="chest3" material="shader: flat;" position="5 1 -2"></a-entity>
-		
+
 		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="0.05" repeat="60 60" src="assets/tessellated/grass.jpg" material="shader: flat;" static-body shadow="receive: true"></a-box>
 	</a-scene>
 	<script src="js/game.js"></script>
