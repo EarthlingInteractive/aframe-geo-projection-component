@@ -21,17 +21,19 @@ AFRAME.registerComponent('chest', {
 
 		var boxBack = document.createElement('a-box');
 		boxBack.setAttribute('position', pos);
+		boxBack.setAttribute('class', 'box-back');
 		boxBack.setAttribute('width', data.dimension);
 		boxBack.setAttribute('height', data.dimension);
 		boxBack.setAttribute('depth', data.dimension);
 		boxBack.setAttribute('material', { shader: 'flat', 'src': '#wood-planks-01' });
-		boxBack.setAttribute('dynamic-body', true);
-		//boxBack.setAttribute('static-body', true);
+		//boxBack.setAttribute('dynamic-body', true);
+		boxBack.setAttribute('static-body', true);
 		boxBack.setAttribute('physics-body', { mass: 1000000000 });
 		
 		var boxLid = document.createElement('a-box');
 		var lidPos = Object.assign({}, pos);
 		lidPos.y += data.lidThickness + 1.5; //0.01;
+		boxLid.setAttribute('class', 'box-lid');
 		boxLid.setAttribute('material', { shader: 'flat', src: '#wood-planks-02' });
 		boxLid.setAttribute('width', data.dimension);
 		boxLid.setAttribute('height', data.lidThickness);
