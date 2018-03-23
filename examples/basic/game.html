@@ -11,7 +11,10 @@
   </head>
   <body>
     <a-scene id="theScene" physics="xdebug: true;">
-
+		<a-assets>
+			<img id="wood-planks-01" src="assets/tessellated/wood-planks-01.jpg">
+			<img id="wood-planks-02" src="assets/tessellated/wood-planks-02.jpg">
+		</a-assets>
 		<a-entity xrotation="0 200 0" look-at="#chest1">
 			<a-entity id="player" physics-body="mass: 100; boundingBox: 1 1.8 1" camera look-controls position="0 5 8" wasd-controls="fly: true; easing: 10; acceleration: 200;">	
 				<a-cursor></a-cursor>	
@@ -27,7 +30,7 @@
 		<a-entity chest="dimension: 3;" id="chest2" material="shader: flat;" position="-5 1 -2"></a-entity>
 		<a-entity chest="dimension: 3;" id="chest3" material="shader: flat;" position="5 1 -2"></a-entity>
 
-		<a-box position="0 0 0" rotation="-90 0 0" width="200" height="200" depth="0.05" repeat="60 60" src="assets/tessellated/grass.jpg" material="shader: flat;" static-body shadow="receive: true"></a-box>
+		<a-box position="0 -0.05 0" rotation="-90 0 0" width="200" height="200" depth="0.05" repeat="60 60" src="assets/tessellated/grass.jpg" material="shader: flat;" static-body shadow="receive: true"></a-box>
 	</a-scene>
 	<script src="js/game.js"></script>
   </body>
