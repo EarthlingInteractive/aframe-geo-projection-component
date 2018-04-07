@@ -3,7 +3,6 @@ require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
 var geoProjectionComponent = require('../index.js');
-var renderers = require('../src/renderers');
 var entityFactory = require('./helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
