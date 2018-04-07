@@ -5,8 +5,6 @@ var getD3Projection = require('../../src/projection').getD3Projection;
 var ThreeJSRenderContext = require('../../src/renderContext').ThreeJSRenderContext;
 var entityFactory = require('../helpers').entityFactory;
 
-var THREE = AFRAME.THREE;
-
 var lineGeoJson = {type: 'LineString', coordinates: [[0, 0], [100, 100]]};
 var projection = getD3Projection('geoIdentity');
 
@@ -33,7 +31,7 @@ suite('geo-projection system', function () {
     test('populates the render context with data from the geoJson', function () {
       var renderContext = system.renderToContext(lineGeoJson, projection);
       var vertices = renderContext.toVertices();
-      assert.sameOrderedMembers(vertices, [0,0,0,100,100,0]);
+      assert.sameOrderedMembers(vertices, [0, 0, 0, 100, 100, 0]);
     });
   });
 });
