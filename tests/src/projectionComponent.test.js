@@ -2,8 +2,8 @@
 require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
-var geoProjectionComponent = require('../index.js');
-var entityFactory = require('./helpers').entityFactory;
+var geoProjectionComponent = require('../../src/projectionComponent');
+var entityFactory = require('../helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
 
@@ -188,11 +188,11 @@ suite('geo-projection component', function () {
     test('emits an event when it completes loading', function () {
       var eventHandlerSpy = sandbox.spy();
 
-      el.addEventListener(geoProjectionComponent.GEO_SRC_LOADED_EVENT, eventHandlerSpy);
+      el.addEventListener('geo-src-loaded', eventHandlerSpy);
       var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
       component.onSrcLoaded(text);
 
-      sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { } });
+      sinon.assert.called(eventHandlerSpy);
     });
   });
 });
