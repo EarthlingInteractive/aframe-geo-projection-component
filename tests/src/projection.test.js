@@ -2,7 +2,7 @@
 require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
-require('../../src/projectionComponent');
+require('../../src/projection');
 var entityFactory = require('../helpers').entityFactory;
 
 var THREE = AFRAME.THREE;

@@ -6,7 +6,7 @@ if (typeof AFRAME === 'undefined') {
 }
 
 require('./src/system');
-require('./src/projectionComponent');
+require('./src/projection');
 require('./src/outlineRenderer');
 require('./src/shapeRenderer');
 require('./src/extrudeRenderer');
