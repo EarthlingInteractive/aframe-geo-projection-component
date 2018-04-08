@@ -1,6 +1,6 @@
 /* global AFRAME */
 
-var projectionLib = require('./projection');
+var projectionUtils = require('./projectionUtils');
 var topojsonFeature = require('topojson-client').feature;
 
 var THREE = AFRAME.THREE;
@@ -52,7 +52,7 @@ AFRAME.registerComponent('geo-projection', {
 
   onSrcLoaded: function (text) {
     this.geoJson = this.parseGeoJson(text);
-    this.projection = projectionLib.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
+    this.projection = projectionUtils.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
     this.el.emit(GEO_SRC_LOADED_EVENT, {});
   },
 

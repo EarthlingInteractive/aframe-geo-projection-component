@@ -1,7 +1,7 @@
 /* global assert, setup, suite, test */
 require('aframe');
 require('../../src/system');
-var getD3Projection = require('../../src/projection').getD3Projection;
+var getD3Projection = require('../../src/projectionUtils').getD3Projection;
 var ThreeJSRenderContext = require('../../src/renderContext').ThreeJSRenderContext;
 var entityFactory = require('../helpers').entityFactory;
 
