@@ -1,27 +1,13 @@
 /* global AFRAME */
 
 var projectionUtils = require('../projectionUtils');
-var topojsonFeature = require('topojson-client').feature;
-
-var THREE = AFRAME.THREE;
-var GEO_SRC_LOADED_EVENT = 'geo-src-loaded';
+var constants = require('../constants');
 
 /**
- * Geo Projection component for A-Frame.  Handles loading geoJson
- * and topoJson data and projecting it to VR space.
+ * Projects GeoJSON to VR space.
  */
 AFRAME.registerComponent('geo-projection', {
   schema: {
-    src: {
-      type: 'asset'
-    },
-    srcType: {
-      oneOf: ['geojson', 'topojson'],
-      default: 'geojson'
-    },
-    topologyObject: {
-      type: 'string'
-    },
     projection: {
       default: 'geoIdentity'
     },
@@ -29,44 +15,32 @@ AFRAME.registerComponent('geo-projection', {
     height: {default: 1}
   },
 
-  /**
-   * Called once when component is attached. Generally for initial setup.
-   */
   init: function () {
-    this.loader = new THREE.FileLoader();
+    this.onSrcLoaded = this.onSrcLoaded.bind(this);
+    this.el.addEventListener(constants.GEO_SRC_LOADED_EVENT, this.onSrcLoaded);
   },
 
-  /**
-   * Called when component is attached and when component data changes.
-   * Generally modifies the entity based on the data.
-   */
+  remove: function () {
+    this.el.removeEventListener(constants.GEO_SRC_LOADED_EVENT, this.onSrcLoaded);
+  },
+
   update: function (oldData) {
-    if (!this.data.src) {
+    if (!this.geoJson) {
       return;
     }
     var differences = AFRAME.utils.diff(oldData, this.data);
     if (Object.keys(differences).length > 0) {
-      this.loader.load(this.data.src, this.onSrcLoaded.bind(this));
+      this.projectGeoJson();
     }
   },
 
-  onSrcLoaded: function (text) {
-    this.geoJson = this.parseGeoJson(text);
+  onSrcLoaded: function (event) {
+    this.geoJson = event.detail.geoJson;
+    this.projectGeoJson();
+  },
+
+  projectGeoJson: function () {
     this.projection = projectionUtils.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
-    this.el.emit(GEO_SRC_LOADED_EVENT, {});
-  },
-
-  parseGeoJson: function (text) {
-    var json = JSON.parse(text);
-
-    var geoJson = json;
-    if (this.data.srcType === 'topojson') {
-      var topologyObjectName = this.data.topologyObject;
-      if (!this.data.topologyObject) {
-        topologyObjectName = Object.keys(json.objects)[0];
-      }
-      geoJson = topojsonFeature(json, json.objects[topologyObjectName]);
-    }
-    return geoJson;
+    this.el.emit(constants.GEO_DATA_READY_EVENT, {});
   }
 });

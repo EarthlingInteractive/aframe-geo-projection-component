@@ -1,9 +1,10 @@
 /* global AFRAME */
 
+var GEO_DATA_READY_EVENT = require('../constants').GEO_DATA_READY_EVENT;
 var THREE = AFRAME.THREE;
 
 /**
- * Renders geoJson as outlines.
+ * Renders GeoJSON as outlines.
  */
 AFRAME.registerComponent('geo-outline-renderer', {
   dependencies: ['geo-projection', 'material'],
@@ -19,7 +20,7 @@ AFRAME.registerComponent('geo-outline-renderer', {
     this.system = this.el.sceneEl.systems['geo-projection'];
     this.geoProjectionComponent = this.el.components['geo-projection'];
     this.render = this.render.bind(this);
-    this.el.addEventListener('geo-src-loaded', this.render);
+    this.el.addEventListener(GEO_DATA_READY_EVENT, this.render);
   },
 
   update: function (oldData) {
@@ -36,7 +37,7 @@ AFRAME.registerComponent('geo-outline-renderer', {
   },
 
   remove: function () {
-    this.el.removeEventListener('geo-src-loaded', this.render);
+    this.el.removeEventListener(GEO_DATA_READY_EVENT, this.render);
     var obj = this.el.getObject3D('outlineMap');
     if (obj) {
       this.el.removeObject3D('outlineMap');

@@ -3,9 +3,10 @@ require('aframe');
 var sinon = require('sinon');
 var sandbox = sinon.createSandbox();
 require('../../../src/components/projection');
+var constants = require('../../../src/constants');
 var entityFactory = require('../../helpers').entityFactory;
 
-var THREE = AFRAME.THREE;
+var geoJson = {type: 'LineString', coordinates: [[0, 0], [1, 1]]};
 
 suite('geo-projection component', function () {
   var component;
@@ -44,30 +45,6 @@ suite('geo-projection component', function () {
         assert.propertyVal(component.data, 'height', 1);
       });
     });
-    suite('src property', function () {
-      test('exists', function () {
-        assert.property(component.data, 'src');
-      });
-      test('defaults to empty string', function () {
-        assert.propertyVal(component.data, 'src', '');
-      });
-    });
-    suite('srcType property', function () {
-      test('exists', function () {
-        assert.property(component.data, 'srcType');
-      });
-      test('defaults to geojson', function () {
-        assert.propertyVal(component.data, 'srcType', 'geojson');
-      });
-    });
-    suite('topologyObject property', function () {
-      test('exists', function () {
-        assert.property(component.data, 'topologyObject');
-      });
-      test('defaults to empty string', function () {
-        assert.propertyVal(component.data, 'topologyObject', '');
-      });
-    });
     suite('projection property', function () {
       test('exists', function () {
         assert.property(component.data, 'projection');
@@ -79,120 +56,107 @@ suite('geo-projection component', function () {
   });
 
   suite('#init', function () {
-    test('initializes a FileLoader', function () {
-      var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
-      var loaderStub = sandbox.stub(THREE, 'FileLoader');
-      loaderStub.returns(fakeLoader);
+    test('listens for the GEO_SRC_LOADED_EVENT event', function () {
+      var onSrcLoadedSpy = sandbox.spy();
+      component.onSrcLoaded = onSrcLoadedSpy;
+
       component.init();
-      sinon.assert.calledWithNew(loaderStub);
-      assert.equal(component.loader, fakeLoader);
+
+      el.emit(constants.GEO_SRC_LOADED_EVENT);
+
+      sinon.assert.called(onSrcLoadedSpy);
+    });
+  });
+
+  suite('#remove', function () {
+    test('stopos listening for the GEO_SRC_LOADED_EVENT event', function () {
+      var onSrcLoadedSpy = sandbox.spy();
+      component.onSrcLoaded = onSrcLoadedSpy;
+
+      component.init();
+
+      component.remove();
+
+      el.emit(constants.GEO_SRC_LOADED_EVENT);
+
+      sinon.assert.notCalled(onSrcLoadedSpy);
     });
   });
 
   suite('#update', function () {
     suite('when a property changes', function () {
-      test('reloads the src data', function () {
-        var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
-        var loaderStub = sandbox.stub(THREE, 'FileLoader');
-        loaderStub.returns(fakeLoader);
-        sandbox.spy(component, 'update');
-        sandbox.stub(component.onSrcLoaded, 'bind').callsFake(function () { return component.onSrcLoaded; });
+      test('reprojects the data', function () {
+        component.geoJson = geoJson;
+        component.projectGeoJson = sandbox.spy();
 
-        component.init();
-        el.setAttribute('geo-projection', {
-          src: '/base/tests/assets/test.json'
-        });
+        component.data.width = 2;
+        var oldData = { width: 1 };
 
-        sinon.assert.calledOnce(component.update);
-        sinon.assert.calledWith(fakeLoader.load, '/base/tests/assets/test.json', component.onSrcLoaded);
+        component.update(oldData);
+
+        sinon.assert.called(component.projectGeoJson);
       });
     });
-    suite('when the src property is blank', function () {
-      test('does not re-load the src data', function () {
-        var fakeLoader = sandbox.createStubInstance(THREE.FileLoader);
-        var loaderStub = sandbox.stub(THREE, 'FileLoader');
-        loaderStub.returns(fakeLoader);
-        sandbox.spy(component, 'update');
+    suite('when no properties change', function () {
+      test('does not reproject the data', function () {
+        component.projectGeoJson = sandbox.spy();
+        component.geoJson = geoJson;
 
-        component.init();
-        el.setAttribute('geo-projection', {
-          src: '',
-          width: 2
-        });
+        component.data = {
+          width: 1,
+          height: 1,
+          projection: 'geoIdentity'
+        };
+        var oldData = {
+          width: 1,
+          height: 1,
+          projection: 'geoIdentity'
+        };
 
-        sinon.assert.calledOnce(component.update);
-        sinon.assert.notCalled(fakeLoader.load);
+        component.update(oldData);
+
+        sinon.assert.notCalled(component.projectGeoJson);
+      });
+    });
+    suite('when the geoJson is blank', function () {
+      test('does not reproject the data', function () {
+        component.geoJson = null;
+        component.projectGeoJson = sandbox.spy();
+        component.data.width = 2;
+        var oldData = { width: 1 };
+
+        component.update(oldData);
+
+        sinon.assert.notCalled(component.projectGeoJson);
       });
     });
   });
 
   suite('#onSrcLoaded', function () {
-    suite('when srcType is geojson', function () {
-      test('parses the given text into JSON', function () {
-        el.setAttribute('geo-projection', {
-          srcType: 'geojson'
-        });
-
-        var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
-        component.onSrcLoaded(text);
-
-        assert.deepEqual(component.geoJson, {type: 'LineString', coordinates: [[0, 0], [1, 1]]});
-      });
+    var event = { detail: { geoJson: geoJson }};
+    test('stores the GeoJson from the event', function () {
+      component.onSrcLoaded(event);
+      assert.equal(component.geoJson, geoJson);
     });
-    suite('when srcType is topojson', function () {
-      var topoJson = '{"type":"Topology","transform":{"scale":[0.036003600360036005,0.017361589674592462],"translate":[-180,-89.99892578124998]},"objects":{"aruba":{"type":"Polygon","arcs":[[0]],"id":533},"line":{"type":"LineString","arcs":[[1]],"id":534}},"arcs":[[[3058,5901],[0,-2],[-2,1],[-1,3],[-2,3],[0,3],[1,1],[1,-3],[2,-5],[1,-1]],[[3058,5901],[0,1]]]}';
-      suite('and topologyObject is defined', function () {
-        test('renders the given topologyObject', function () {
-          el.setAttribute('geo-projection', {
-            srcType: 'topojson',
-            topologyObject: 'line'
-          });
-
-          component.onSrcLoaded(topoJson);
-
-          var expectedGeoJsonSnippet = {
-            geometry: {
-              type: 'LineString',
-              coordinates: [[-69.9009900990099, 12.451814888520133], [-69.9009900990099, 12.469176478194726]]
-            }
-          };
-          assert.deepInclude(component.geoJson, expectedGeoJsonSnippet);
-        });
-      });
-      suite('and topologyObject is not defined', function () {
-        test('chooses the first object as the feature', function () {
-          el.setAttribute('geo-projection', {
-            srcType: 'topojson'
-          });
-
-          component.onSrcLoaded(topoJson);
-
-          var expectedGeoJsonSnippet = {
-            geometry: {
-              'type': 'Polygon',
-              'coordinates': [
-                [
-                  [-69.9009900990099, 12.451814888520133], [-69.9009900990099, 12.417091709170947],
-                  [-69.97299729972997, 12.43445329884554], [-70.00900090009, 12.486538067869319],
-                  [-70.08100810081008, 12.538622836893097], [-70.08100810081008, 12.590707605916876],
-                  [-70.04500450045005, 12.608069195591469], [-70.00900090009, 12.55598442656769],
-                  [-69.93699369936994, 12.469176478194726], [-69.9009900990099, 12.451814888520133]
-                ]
-              ]
-            }
-          };
-          assert.deepInclude(component.geoJson, expectedGeoJsonSnippet);
-        });
-      });
+    test('projects the GeoJson', function () {
+      component.projectGeoJson = sandbox.spy();
+      component.onSrcLoaded(event);
+      sinon.assert.called(component.projectGeoJson);
     });
-    test('emits an event when it completes loading', function () {
+  });
+  suite('#projectGeoJson', function () {
+    test('emits a GEO_DATA_READY_EVENT event', function () {
       var eventHandlerSpy = sandbox.spy();
+      el.addEventListener(constants.GEO_DATA_READY_EVENT, eventHandlerSpy);
 
-      el.addEventListener('geo-src-loaded', eventHandlerSpy);
-      var text = '{ "type": "LineString", "coordinates": [[0, 0], [1, 1]] }';
-      component.onSrcLoaded(text);
+      component.projectGeoJson();
 
       sinon.assert.called(eventHandlerSpy);
+    });
+    test('calculation a projection', function () {
+      component.projectGeoJson();
+      assert.exists(component.projection);
+      assert.exists(component.projection.stream);
     });
   });
 });

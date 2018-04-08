@@ -3,6 +3,7 @@ require('aframe');
 require('../../../index');
 require('../../../src/components/outlineRenderer');
 
+var GEO_DATA_READY_EVENT = require('../../../src/constants').GEO_DATA_READY_EVENT;
 var entityFactory = require('../../helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
@@ -49,7 +50,7 @@ suite('geo-outline-renderer', function () {
     });
     suite('geo-projection', function () {
       test('can access a geo-projection component defined on the entity', function () {
-        el.setAttribute('geo-projection', {src: '/base/tests/assets/test.json'});
+        el.setAttribute('geo-projection', {});
         var geoProjection = el.components['geo-projection'];
         assert.exists(geoProjection);
       });
@@ -63,12 +64,12 @@ suite('geo-outline-renderer', function () {
     test('connects to the geo-projection component', function () {
       assert.equal(component.geoProjectionComponent.name, 'geo-projection');
     });
-    test('listens for the geo-src-loaded event', function () {
+    test('listens for the GEO_DATA_READY_EVENT event', function () {
       var object3D = component.el.getObject3D('outlineMap');
       assert.notExists(object3D);
 
       component.geoProjectionComponent.geoJson = lineGeoJson;
-      el.emit('geo-src-loaded');
+      el.emit(GEO_DATA_READY_EVENT);
       object3D = component.el.getObject3D('outlineMap');
       assert.instanceOf(object3D, THREE.Object3D);
     });
@@ -137,7 +138,7 @@ suite('geo-outline-renderer', function () {
       var object3D = component.el.getObject3D('outlineMap');
       assert.isUndefined(object3D);
     });
-    test('stops listening for the geo-src-loaded event', function () {
+    test('stops listening for the GEO_DATA_READY_EVENT event', function () {
       component.geoProjectionComponent.geoJson = lineGeoJson;
       component.render();
 
@@ -146,7 +147,7 @@ suite('geo-outline-renderer', function () {
       var object3D = component.el.getObject3D('outlineMap');
       assert.isUndefined(object3D);
 
-      el.emit('geo-src-loaded');
+      el.emit(GEO_DATA_READY_EVENT);
 
       object3D = component.el.getObject3D('outlineMap');
       assert.isUndefined(object3D);
