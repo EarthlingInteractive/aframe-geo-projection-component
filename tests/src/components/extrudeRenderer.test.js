@@ -1,9 +1,9 @@
 /* global assert, setup, suite, test */
 require('aframe');
-require('../../index');
-require('../../src/extrudeRenderer');
+require('../../../index');
+require('../../../src/components/extrudeRenderer');
 
-var entityFactory = require('../helpers').entityFactory;
+var entityFactory = require('../../helpers').entityFactory;
 
 var THREE = AFRAME.THREE;
 

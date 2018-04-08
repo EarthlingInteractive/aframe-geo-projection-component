@@ -1,6 +1,6 @@
 /* global AFRAME */
 
-var projectionUtils = require('./projectionUtils');
+var projectionUtils = require('../projectionUtils');
 var topojsonFeature = require('topojson-client').feature;
 
 var THREE = AFRAME.THREE;
