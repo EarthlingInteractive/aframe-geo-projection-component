@@ -85,37 +85,35 @@ suite('geo-shape-renderer', function () {
     suite('when the geoProjectComponent has geoJson loaded', function () {
       suite('and the value of isCCW changes', function () {
         test('re-renders', function () {
-          var object3D = component.el.getObject3D('shapeMap');
-          assert.isUndefined(object3D);
+          component.render = sinon.spy();
 
           component.geoProjectionComponent.geoJson = squareGeoJson;
 
-          el.setAttribute('geo-shape-renderer', { isCCW: true });
+          component.data = { isCCW: false };
+          component.update({ isCCW: true });
 
-          object3D = component.el.getObject3D('shapeMap');
-          assert.instanceOf(object3D, THREE.Object3D);
+          sinon.assert.called(component.render);
         });
       });
       suite('and the value of isCCW has not changed', function () {
         test('does not re-render', function () {
-          var object3D = component.el.getObject3D('shapeMap');
-          assert.notExists(object3D);
+          component.render = sinon.spy();
 
           component.geoProjectionComponent.geoJson = squareGeoJson;
 
-          el.setAttribute('geo-shape-renderer', { isCCW: false });
+          component.data = { isCCW: false };
+          component.update({ isCCW: false });
 
-          object3D = component.el.getObject3D('shapeMap');
-          assert.notExists(object3D);
+          sinon.assert.notCalled(component.render);
         });
       });
     });
     suite('when the geoProjectComponent has no geoJson loaded', function () {
       test('does not render anything', function () {
+        component.render = sinon.spy();
         component.geoProjectionComponent.geoJson = null;
         component.update({});
-        var object3D = component.el.getObject3D('shapeMap');
-        assert.notExists(object3D);
+        sinon.assert.notCalled(component.render);
       });
     });
   });

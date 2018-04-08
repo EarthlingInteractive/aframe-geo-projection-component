@@ -78,31 +78,42 @@ suite('geo-outline-renderer', function () {
   suite('#update', function () {
     suite('when a color has been set', function () {
       test('uses a LineBasicMaterial with that color for the material', function () {
-        el.setAttribute('geo-outline-renderer', { color: 'red' });
+        component.data.color = 'red';
+        component.update({ color: ''});
         assert.isTrue(component.material.color.equals(new THREE.Color('red')));
         assert.instanceOf(component.material, THREE.LineBasicMaterial);
+      });
+    });
+    suite('when the color does not change', function () {
+      test('does not change the material', function () {
+        el.setAttribute('material', { color: 'blue' });
+        component.data.color = '';
+        component.update({ color: ''});
+        assert.equal(component.material, el.components.material.material);
       });
     });
     suite('when no color is set', function () {
       test('uses the entity material', function () {
         el.setAttribute('material', { color: 'blue' });
+        component.data.color = '';
+        component.update({ color: 'green'});
         assert.isTrue(component.material.color.equals(new THREE.Color('blue')));
       });
     });
     suite('when the geoProjectComponent has geoJson loaded', function () {
       test('renders an Object3D', function () {
+        component.render = sinon.spy();
         component.geoProjectionComponent.geoJson = lineGeoJson;
         component.update({});
-        var object3D = component.el.getObject3D('outlineMap');
-        assert.instanceOf(object3D, THREE.Object3D);
+        sinon.assert.called(component.render);
       });
     });
     suite('when the geoProjectComponent has no geoJson loaded', function () {
       test('does not render anything', function () {
+        component.render = sinon.spy();
         component.geoProjectionComponent.geoJson = null;
         component.update({});
-        var object3D = component.el.getObject3D('outlineMap');
-        assert.isUndefined(object3D);
+        sinon.assert.notCalled(component.render);
       });
     });
   });

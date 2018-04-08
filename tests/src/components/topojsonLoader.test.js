@@ -62,61 +62,41 @@ suite('topojson-loader component', function () {
         var fakeLoader = { load: sandbox.spy() };
         component.loader = fakeLoader;
 
-        el.setAttribute('topojson-loader', {
-          src: '/base/tests/assets/test.topo.json'
-        });
+        component.data = { src: '/base/tests/assets/test.topo.json', topologyObject: '' };
+        component.update({ src: '', topologyObject: '' });
 
         sinon.assert.calledWith(fakeLoader.load, '/base/tests/assets/test.topo.json', component.onSrcLoaded);
       });
     });
     suite('when the topologyObject property changes', function () {
       test('loads the src data', function () {
-        el.setAttribute('topojson-loader', {
-          src: '/base/tests/assets/test.topo.json',
-          topologyObject: ''
-        });
-
         var fakeLoader = { load: sandbox.spy() };
         component.loader = fakeLoader;
 
-        el.setAttribute('topojson-loader', {
-          src: '/base/tests/assets/test.topo.json',
-          topologyObject: 'aruba'
-        });
+        component.data = { src: '/base/tests/assets/test.topo.json', topologyObject: 'aruba' };
+        component.update({ src: '', topologyObject: '' });
 
         sinon.assert.calledWith(fakeLoader.load, '/base/tests/assets/test.topo.json', component.onSrcLoaded);
       });
     });
     suite('when the src property is blank', function () {
       test('does not try to load the src data', function () {
-        el.setAttribute('topojson-loader', {
-          src: '/base/tests/assets/test.topo.json'
-        });
-
         var fakeLoader = { load: sandbox.spy() };
         component.loader = fakeLoader;
 
-        el.setAttribute('topojson-loader', {
-          src: ''
-        });
+        component.data = { src: '', topologyObject: '' };
+        component.update({ src: '/base/tests/assets/test.topo.json', topologyObject: '' });
 
         sinon.assert.notCalled(fakeLoader.load);
       });
     });
     suite('when no properties have changed', function () {
       test('does not try to load the src data', function () {
-        el.setAttribute('topojson-loader', {
-          src: '/base/tests/assets/test.topo.json',
-          topologyObject: 'aruba'
-        });
-
         var fakeLoader = { load: sandbox.spy() };
         component.loader = fakeLoader;
 
-        el.setAttribute('topojson-loader', {
-          src: '/base/tests/assets/test.topo.json',
-          topologyObject: 'aruba'
-        });
+        component.data = { src: '/base/tests/assets/test.topo.json', topologyObject: 'aruba' };
+        component.update({ src: '/base/tests/assets/test.topo.json', topologyObject: 'aruba' });
 
         sinon.assert.notCalled(fakeLoader.load);
       });

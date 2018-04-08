@@ -93,50 +93,46 @@ suite('geo-extrude-renderer', function () {
     suite('when the geoProjectComponent has geoJson loaded', function () {
       suite('and the value of isCCW changes', function () {
         test('re-renders', function () {
-          var object3D = component.el.getObject3D('extrudeMap');
-          assert.isUndefined(object3D);
+          component.render = sinon.spy();
 
           component.geoProjectionComponent.geoJson = squareGeoJson;
 
-          el.setAttribute('geo-extrude-renderer', { isCCW: true });
+          component.data = { isCCW: false, extrudeAmount: 1 };
+          component.update({ isCCW: true, extrudeAmount: 1 });
 
-          object3D = component.el.getObject3D('extrudeMap');
-          assert.instanceOf(object3D, THREE.Object3D);
+          sinon.assert.called(component.render);
         });
       });
       suite('and the value of extrudeAmount changes', function () {
         test('re-renders', function () {
-          var object3D = component.el.getObject3D('extrudeMap');
-          assert.isUndefined(object3D);
+          component.render = sinon.spy();
 
           component.geoProjectionComponent.geoJson = squareGeoJson;
 
-          el.setAttribute('geo-extrude-renderer', { extrudeAmount: 2 });
+          component.data = { isCCW: true, extrudeAmount: 1 };
+          component.update({ isCCW: true, extrudeAmount: 2 });
 
-          object3D = component.el.getObject3D('extrudeMap');
-          assert.instanceOf(object3D, THREE.Object3D);
+          sinon.assert.called(component.render);
         });
       });
       suite('and the values of isCCW and extrudeAmount have not changed', function () {
         test('does not re-render', function () {
-          var object3D = component.el.getObject3D('extrudeMap');
-          assert.notExists(object3D);
-
+          component.render = sinon.spy();
           component.geoProjectionComponent.geoJson = squareGeoJson;
 
-          el.setAttribute('geo-extrude-renderer', { isCCW: false, extrudeAmount: 1 });
+          component.data = { isCCW: false, extrudeAmount: 1 };
+          component.update({ isCCW: false, extrudeAmount: 1 });
 
-          object3D = component.el.getObject3D('extrudeMap');
-          assert.notExists(object3D);
+          sinon.assert.notCalled(component.render);
         });
       });
     });
     suite('when the geoProjectComponent has no geoJson loaded', function () {
       test('does not render anything', function () {
+        component.render = sinon.spy();
         component.geoProjectionComponent.geoJson = null;
         component.update({});
-        var object3D = component.el.getObject3D('extrudeMap');
-        assert.notExists(object3D);
+        sinon.assert.notCalled(component.render);
       });
     });
   });
