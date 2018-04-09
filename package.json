@@ -1,6 +1,6 @@
 {
   "name": "aframe-geo-projection-component",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "An A-Frame component for creating maps in VR using d3-geo projections",
   "main": "index.js",
   "unpkg": "dist/aframe-geo-projection-component.min.js",
