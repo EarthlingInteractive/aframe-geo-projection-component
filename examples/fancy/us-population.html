@@ -13,7 +13,7 @@
 </head>
 <body>
 <script>
-  AFRAME.registerComponent('data-for-map', {
+  AFRAME.registerComponent('geo-extrude-population-renderer', {
     dependencies: ['geo-projection'],
     schema: {
       maxExtrudeHeight: {
@@ -21,21 +21,21 @@
       }
     },
     init: function () {
+      this.system = this.el.sceneEl.systems['geo-projection'];
       this.geoProjectionComponent = this.el.components['geo-projection'];
-
+      this.geoJsonReady = this.geoJsonReady.bind(this);
       // Wait for geoJson to finish loading to avoid race conditions
-      this.el.addEventListener('geo-src-loaded', this.geoJsonReady.bind(this));
+      this.el.addEventListener('geo-src-loaded', this.geoJsonReady);
     },
     update: function (oldData) {
+      if (!this.geoProjectionComponent.geoJson) {
+        return;
+      }
       if (this.data.maxExtrudeHeight !== oldData.maxExtrudeHeight) {
         this.geoJsonReady();
       }
     },
     geoJsonReady: function () {
-      // Override the render method of geoProjectionComponent with the custom one on this component
-      // this allows us to push the data that needs to be visualized into the rendering pipeline
-      this.geoProjectionComponent.render = this.render;
-
       // Now kick off loading the data
       d3.queue()
         .defer(d3.csv, '../data/us-population-2017.csv', function (d) {
@@ -61,11 +61,8 @@
         accum[fipsCode] = d.population;
         return accum;
       }, {});
-      this.geoProjectionComponent.render(populationByFipsCode, maxPopulation, this.data.maxExtrudeHeight);
+      this.render(populationByFipsCode, maxPopulation, this.data.maxExtrudeHeight);
     },
-    // Custom rendering function that does all the work
-    // Note that the `this` for this function is the geoProjectionComponent instead of this data-for-map component
-    // So that we can use all the functions and data of the geoProjectionComponent to help with rendering
     render: function (populationByFipsCode, maxPopulation, maxExtrudeHeight) {
       if (!populationByFipsCode) return;
       var material = this.el.components.material.material;
@@ -73,7 +70,7 @@
       var stateOutlineVertices = [];
       // Split the geoJson into features and render each one individually so that we can set a different
       // extrusion height for each based on the population.
-      this.geoJson.features.forEach(function (feature) {
+      this.geoProjectionComponent.geoJson.features.forEach(function (feature) {
         var population = populationByFipsCode[feature.id];
         var extrudeAmount = (population / maxPopulation) * maxExtrudeHeight;
         const extrudeSettings = {
@@ -81,8 +78,8 @@
           bevelEnabled: false
         };
 
-        var mapRenderContext = this.renderer.renderToContext(feature, this.projection);
-        const stateShapes = mapRenderContext.toShapes(this.data.isCCW);
+        var mapRenderContext = this.system.renderToContext(feature, this.geoProjectionComponent.projection);
+        const stateShapes = mapRenderContext.toShapes();
 
         // Gather the outline of the state and set the height of the outline to the extrude level
         // so that the top of the state is outlined
@@ -123,16 +120,12 @@
     <a-entity id="map"
               rotation="-90 0 0"
               material="color: #A46C39;"
-              data-for-map
+              topojson-loader="src: #json-us; topologyObject: states;"
               geo-projection="
-                  src: #json-us;
-                  srcType: topojson;
-                  isCCW: false;
                   projection: geoIdentity;
-                  topologyObject: states;
-                  meshType: line;
                   height: 6;
                   width: 10;"
+              geo-extrude-population-renderer
     >
     </a-entity>
     <a-locomotor>
