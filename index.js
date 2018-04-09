@@ -7,6 +7,8 @@ if (typeof AFRAME === 'undefined') {
 
 require('./src/system');
 require('./src/components/projection');
+require('./src/components/geojsonLoader');
+require('./src/components/topojsonLoader');
 require('./src/components/outlineRenderer');
 require('./src/components/shapeRenderer');
 require('./src/components/extrudeRenderer');
