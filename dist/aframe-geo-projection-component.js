@@ -46,152 +46,44 @@
 
 	/* global AFRAME */
 
-	__webpack_require__(1);
-	var renderers = __webpack_require__(2);
-	var projectionLib = __webpack_require__(6);
-	var topojson = __webpack_require__(15);
-
+	/* istanbul ignore next */
 	if (typeof AFRAME === 'undefined') {
 	  throw new Error('Component attempted to register before AFRAME was available.');
 	}
-	var THREE = AFRAME.THREE;
-	var GEO_SRC_LOADED_EVENT = 'geo-src-loaded';
 
-	/**
-	 * Geo Projection component for A-Frame.
-	 */
-	AFRAME.registerComponent('geo-projection', {
-	  dependencies: ['material'],
-
-	  schema: {
-	    src: {
-	      type: 'asset'
-	    },
-	    srcType: {
-	      oneOf: ['geojson', 'topojson'],
-	      default: 'geojson'
-	    },
-	    topologyObject: {
-	      type: 'string'
-	    },
-	    isCCW: {
-	      type: 'boolean',
-	      default: false
-	    },
-	    projection: {
-	      default: 'geoIdentity'
-	    },
-	    meshType: {
-	      oneOf: ['line', 'shape', 'extrude'],
-	      default: 'line'
-	    },
-	    width: {default: 1},
-	    height: {default: 1}
-	  },
-
-	  /**
-	   * Called once when component is attached. Generally for initial setup.
-	   */
-	  init: function () {
-	    this.loader = new THREE.FileLoader();
-	  },
-
-	  /**
-	   * Called when component is attached and when component data changes.
-	   * Generally modifies the entity based on the data.
-	   */
-	  update: function (oldData) {
-	    this.renderer = renderers[this.data.meshType];
-	    if (!this.data.src) {
-	      return;
-	    }
-	    var differences = AFRAME.utils.diff(oldData, this.data);
-	    if (Object.keys(differences).length > 0) {
-	      this.loader.load(this.data.src, this.onSrcLoaded.bind(this));
-	    }
-	  },
-
-	  onSrcLoaded: function (text) {
-	    this.geoJson = this.parseGeoJson(text);
-	    this.projection = projectionLib.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
-	    this.render();
-	    this.el.emit(GEO_SRC_LOADED_EVENT, {
-	      geoProjectionComponent: this
-	    });
-	  },
-
-	  parseGeoJson: function (text) {
-	    var json = JSON.parse(text);
-
-	    var geoJson = json;
-	    if (this.data.srcType === 'topojson') {
-	      var topologyObjectName = this.data.topologyObject;
-	      if (!this.data.topologyObject) {
-	        topologyObjectName = Object.keys(json.objects)[0];
-	      }
-	      geoJson = topojson.feature(json, json.objects[topologyObjectName]);
-	    }
-	    return geoJson;
-	  },
-
-	  render: function () {
-	    var material = this.el.components.material.material;
-	    var object3D = this.renderer.render(this.geoJson, this.projection, this.data.isCCW, material);
-	    this.el.setObject3D('map', object3D);
-	  },
-
-	  /**
-	   * Called when a component is removed (e.g., via removeAttribute).
-	   * Generally undoes all modifications to the entity.
-	   */
-	  remove: function () {
-	    var obj = this.el.getObject3D('map');
-	    if (obj) {
-	      this.el.removeObject3D('map');
-	    }
-	  }
-	});
-
-	module.exports = {
-	  GEO_SRC_LOADED_EVENT: GEO_SRC_LOADED_EVENT
-	};
+	__webpack_require__(1);
+	__webpack_require__(5);
+	__webpack_require__(16);
+	__webpack_require__(17);
+	__webpack_require__(19);
+	__webpack_require__(20);
+	__webpack_require__(21);
 
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+	var geoPath = __webpack_require__(2).geoPath;
+	var ThreeJSRenderContext = __webpack_require__(4).ThreeJSRenderContext;
 
 	var THREE = AFRAME.THREE;
-	// from https://stackoverflow.com/questions/39905663/aframe-how-to-put-three-linebasicmaterial-in-aframe
-	AFRAME.registerShader('linebasic', {
-	  schema: {
-	    blending: {default: THREE.NormalBlending},
-	    color: {type: 'color', default: '#000', is: 'uniform'},
-	    depthTest: {default: true},
-	    depthFunc: {default: THREE.LessEqualDepth},
-	    depthWrite: {default: true},
-	    fog: {default: false},
-	    linewidth: {default: 1},
-	    linecap: {default: 'round'},
-	    linejoin: {default: 'round'},
-	    opacity: {default: 1},
-	    side: {default: THREE.FrontSide},
-	    transparent: {default: false},
-	    vertexColors: {default: THREE.NoColors},
-	    visible: {default: true}
-	  },
-	  init: function (data) {
-	    data = AFRAME.utils.extend({}, data);
-	    delete data.flatShading;
-	    delete data.shader;
-	    delete data.npot;
-	    delete data.repeat;
-	    delete data.offset;
-	    this.material = new THREE.LineBasicMaterial(data);
-	    this.update(data);
-	  },
-	  update: function (data) {
-	    this.material.clone(data);
+
+	module.exports = AFRAME.registerSystem('geo-projection', {
+	  /**
+	   * Takes the input geoJson and uses the projection and D3 to draw it
+	   * into a ThreeJSRenderContext.
+	   *
+	   * @param geoJson the geoJson object to render
+	   * @param projection the projection to use for rendering
+	   * @return ThreeJSRenderContext
+	   */
+	  renderToContext: function renderToContext (geoJson, projection) {
+	    var shapePath = new THREE.ShapePath();
+	    var mapRenderContext = new ThreeJSRenderContext(shapePath);
+	    var mapPath = geoPath(projection, mapRenderContext);
+	    mapPath(geoJson);
+	    return mapRenderContext;
 	  }
 	});
 
@@ -200,94 +92,9 @@
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var d3 = __webpack_require__(3);
-	var ThreeJSRenderContext = __webpack_require__(5).ThreeJSRenderContext;
-
-	var THREE = AFRAME.THREE;
-
-	/**
-	 * Takes the input geoJson and uses the projection and D3 to draw it
-	 * into a ThreeJSRenderContext.
-	 *
-	 * @param geoJson the geoJson object to render
-	 * @param projection the projection to use for rendering
-	 * @return ThreeJSRenderContext
-	 */
-	function renderToContext (geoJson, projection) {
-	  var shapePath = new THREE.ShapePath();
-	  var mapRenderContext = new ThreeJSRenderContext(shapePath);
-	  var mapPath = d3.geoPath(projection, mapRenderContext);
-	  mapPath(geoJson);
-	  return mapRenderContext;
-	}
-
-	/**
-	 * Takes the input geoJson and renders it as an Object3D.
-	 *
-	 * @param geoJson the geoJson object to render
-	 * @param projection the projection to use for rendering
-	 * @param isCCW true if shapes are defined counter-clockwise and holes defined clockwise; false for the reverse
-	 * @param material the THREE.Material to use in the resulting Object3D
-	 * @return THREE.Object3D
-	 */
-	function render (geoJson, projection, isCCW, material) {
-	  var mapRenderContext = this.renderToContext(geoJson, projection);
-	  var geometry = this.createGeometry(mapRenderContext, isCCW);
-	  return this.createMesh(geometry, material);
-	}
-
-	module.exports = {
-	  line: {
-	    render: render,
-	    renderToContext: renderToContext,
-	    createGeometry: function createGeometry (mapRenderContext) {
-	      var lineGeometry = new THREE.BufferGeometry();
-	      var vertices = mapRenderContext.toVertices();
-	      lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-	      return lineGeometry;
-	    },
-	    createMesh: function createMesh (geometry, material) {
-	      return new THREE.LineSegments(geometry, material);
-	    }
-	  },
-
-	  shape: {
-	    render: render,
-	    renderToContext: renderToContext,
-	    createGeometry: function createGeometry (mapRenderContext, isCCW) {
-	      const shapes = mapRenderContext.toShapes(isCCW);
-	      return new THREE.ShapeBufferGeometry(shapes);
-	    },
-	    createMesh: function createMesh (geometry, material) {
-	      return new THREE.Mesh(geometry, material);
-	    }
-	  },
-
-	  extrude: {
-	    render: render,
-	    renderToContext: renderToContext,
-	    createGeometry: function createGeometry (mapRenderContext, isCCW) {
-	      const extrudeSettings = {
-	        amount: 1,
-	        bevelEnabled: false
-	      };
-	      const extShapes = mapRenderContext.toShapes(isCCW);
-	      return new THREE.ExtrudeBufferGeometry(extShapes, extrudeSettings);
-	    },
-	    createMesh: function createMesh (geometry, material) {
-	      return new THREE.Mesh(geometry, material);
-	    }
-	  }
-	};
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
 	// https://d3js.org/d3-geo/ Version 1.10.0. Copyright 2018 Mike Bostock.
 	(function (global, factory) {
-		 true ? factory(exports, __webpack_require__(4)) :
+		 true ? factory(exports, __webpack_require__(3)) :
 		typeof define === 'function' && define.amd ? define(['exports', 'd3-array'], factory) :
 		(factory((global.d3 = global.d3 || {}),global.d3));
 	}(this, (function (exports,d3Array) { 'use strict';
@@ -3370,7 +3177,7 @@
 
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://d3js.org/d3-array/ Version 1.2.1. Copyright 2017 Mike Bostock.
@@ -3966,7 +3773,7 @@
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports) {
 
 	/**
@@ -4062,10 +3869,62 @@
 
 
 /***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* global AFRAME */
+
+	var projectionUtils = __webpack_require__(6);
+	var constants = __webpack_require__(15);
+
+	/**
+	 * Projects GeoJSON to VR space.
+	 */
+	AFRAME.registerComponent('geo-projection', {
+	  schema: {
+	    projection: {
+	      default: 'geoIdentity'
+	    },
+	    width: {default: 1},
+	    height: {default: 1}
+	  },
+
+	  init: function () {
+	    this.onSrcLoaded = this.onSrcLoaded.bind(this);
+	    this.el.addEventListener(constants.GEO_SRC_LOADED_EVENT, this.onSrcLoaded);
+	  },
+
+	  remove: function () {
+	    this.el.removeEventListener(constants.GEO_SRC_LOADED_EVENT, this.onSrcLoaded);
+	  },
+
+	  update: function (oldData) {
+	    if (!this.geoJson) {
+	      return;
+	    }
+	    var differences = AFRAME.utils.diff(oldData, this.data);
+	    if (Object.keys(differences).length > 0) {
+	      this.projectGeoJson();
+	    }
+	  },
+
+	  onSrcLoaded: function (event) {
+	    this.geoJson = event.detail.geoJson;
+	    this.projectGeoJson();
+	  },
+
+	  projectGeoJson: function () {
+	    this.projection = projectionUtils.getFittedProjection(this.data.projection, this.geoJson, this.data.height, this.data.width);
+	    this.el.emit(constants.GEO_DATA_READY_EVENT, {});
+	  }
+	});
+
+
+/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var d3 = Object.assign({}, __webpack_require__(7), __webpack_require__(3), __webpack_require__(14));
+	var d3 = Object.assign({}, __webpack_require__(7), __webpack_require__(2), __webpack_require__(14));
 
 	module.exports = {
 	  /**
@@ -4129,7 +3988,7 @@
 
 	// https://d3js.org/d3-scale/ Version 2.0.0. Copyright 2018 Mike Bostock.
 	(function (global, factory) {
-		 true ? factory(exports, __webpack_require__(4), __webpack_require__(8), __webpack_require__(9), __webpack_require__(11), __webpack_require__(12), __webpack_require__(13)) :
+		 true ? factory(exports, __webpack_require__(3), __webpack_require__(8), __webpack_require__(9), __webpack_require__(11), __webpack_require__(12), __webpack_require__(13)) :
 		typeof define === 'function' && define.amd ? define(['exports', 'd3-array', 'd3-collection', 'd3-interpolate', 'd3-format', 'd3-time', 'd3-time-format'], factory) :
 		(factory((global.d3 = global.d3 || {}),global.d3,global.d3,global.d3,global.d3,global.d3,global.d3));
 	}(this, (function (exports,d3Array,d3Collection,d3Interpolate,d3Format,d3Time,d3TimeFormat) { 'use strict';
@@ -7727,7 +7586,7 @@
 
 	// https://d3js.org/d3-geo-projection/ Version 2.4.0. Copyright 2018 Mike Bostock.
 	(function (global, factory) {
-		 true ? factory(exports, __webpack_require__(3), __webpack_require__(4)) :
+		 true ? factory(exports, __webpack_require__(2), __webpack_require__(3)) :
 		typeof define === 'function' && define.amd ? define(['exports', 'd3-geo', 'd3-array'], factory) :
 		(factory((global.d3 = global.d3 || {}),global.d3,global.d3));
 	}(this, (function (exports,d3Geo,d3Array) { 'use strict';
@@ -12347,6 +12206,114 @@
 
 /***/ }),
 /* 15 */
+/***/ (function(module, exports) {
+
+	
+	module.exports.GEO_SRC_LOADED_EVENT = 'geo-src-loaded';
+	module.exports.GEO_DATA_READY_EVENT = 'geo-data-ready';
+
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* global AFRAME */
+
+	var GEO_SRC_LOADED_EVENT = __webpack_require__(15).GEO_SRC_LOADED_EVENT;
+
+	var THREE = AFRAME.THREE;
+
+	/**
+	 * Handles loading GeoJSON data from a file.
+	 */
+	AFRAME.registerComponent('geojson-loader', {
+	  schema: {
+	    src: {
+	      type: 'asset'
+	    }
+	  },
+
+	  init: function () {
+	    this.loader = new THREE.FileLoader();
+	    this.onSrcLoaded = this.onSrcLoaded.bind(this);
+	  },
+
+	  update: function (oldData) {
+	    if (!this.data.src) {
+	      return;
+	    }
+	    if (this.data.src !== oldData.src) {
+	      this.loader.load(this.data.src, this.onSrcLoaded);
+	    }
+	  },
+
+	  onSrcLoaded: function (text) {
+	    var geoJson = JSON.parse(text);
+	    this.el.emit(GEO_SRC_LOADED_EVENT, { geoJson: geoJson });
+	  }
+	});
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* global AFRAME */
+
+	var topojsonFeature = __webpack_require__(18).feature;
+	var GEO_SRC_LOADED_EVENT = __webpack_require__(15).GEO_SRC_LOADED_EVENT;
+
+	var THREE = AFRAME.THREE;
+
+	/**
+	 * Handles loading TopoJSON data from a file.  Converts it to GeoJSON features.
+	 */
+	AFRAME.registerComponent('topojson-loader', {
+	  schema: {
+	    src: {
+	      type: 'asset'
+	    },
+	    topologyObject: {
+	      type: 'string'
+	    }
+	  },
+
+	  init: function () {
+	    this.loader = new THREE.FileLoader();
+	    this.onSrcLoaded = this.onSrcLoaded.bind(this);
+	  },
+
+	  update: function (oldData) {
+	    if (!this.data.src) {
+	      return;
+	    }
+	    if (this.data.src !== oldData.src || this.data.topologyObject !== oldData.topologyObject) {
+	      this.loader.load(this.data.src, this.onSrcLoaded);
+	    }
+	  },
+
+	  onSrcLoaded: function (text) {
+	    var geoJson = this.parseGeoJson(text);
+	    this.el.emit(GEO_SRC_LOADED_EVENT, { geoJson: geoJson });
+	  },
+
+	  parseGeoJson: function (text) {
+	    var json = JSON.parse(text);
+	    var topologyObjectName = this.data.topologyObject;
+	    if (!this.data.topologyObject) {
+	      topologyObjectName = Object.keys(json.objects)[0];
+	    }
+	    var topologyObject = json.objects[topologyObjectName];
+	    if (!topologyObject) {
+	      throw new Error('TopologyObject with name ' + topologyObjectName + ' could not be found.');
+	    }
+	    return topojsonFeature(json, topologyObject);
+	  }
+	});
+
+
+/***/ }),
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// https://github.com/topojson/topojson-client Version 3.0.0. Copyright 2017 Mike Bostock.
@@ -12854,6 +12821,199 @@
 	Object.defineProperty(exports, '__esModule', { value: true });
 
 	})));
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* global AFRAME */
+
+	var GEO_DATA_READY_EVENT = __webpack_require__(15).GEO_DATA_READY_EVENT;
+	var THREE = AFRAME.THREE;
+
+	/**
+	 * Renders GeoJSON as outlines.
+	 */
+	AFRAME.registerComponent('geo-outline-renderer', {
+	  dependencies: ['geo-projection', 'material'],
+
+	  schema: {
+	    color: {
+	      type: 'color',
+	      default: ''
+	    }
+	  },
+
+	  init: function () {
+	    this.system = this.el.sceneEl.systems['geo-projection'];
+	    this.geoProjectionComponent = this.el.components['geo-projection'];
+	    this.render = this.render.bind(this);
+	    this.el.addEventListener(GEO_DATA_READY_EVENT, this.render);
+	  },
+
+	  update: function (oldData) {
+	    if (this.data.color !== oldData.color) {
+	      if (this.data.color) {
+	        this.material = new THREE.LineBasicMaterial({ color: this.data.color });
+	      } else {
+	        this.material = this.el.components.material.material;
+	      }
+	    }
+	    if (this.geoProjectionComponent.geoJson) {
+	      this.render();
+	    }
+	  },
+
+	  remove: function () {
+	    this.el.removeEventListener(GEO_DATA_READY_EVENT, this.render);
+	    var obj = this.el.getObject3D('outlineMap');
+	    if (obj) {
+	      this.el.removeObject3D('outlineMap');
+	    }
+	  },
+
+	  render: function () {
+	    var geoJson = this.geoProjectionComponent.geoJson;
+	    var projection = this.geoProjectionComponent.projection;
+
+	    var mapRenderContext = this.system.renderToContext(geoJson, projection);
+	    var lineGeometry = new THREE.BufferGeometry();
+	    var vertices = mapRenderContext.toVertices();
+	    lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+	    var outlineMesh = new THREE.LineSegments(lineGeometry, this.material);
+	    this.el.setObject3D('outlineMap', outlineMesh);
+	  }
+	});
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* global AFRAME */
+
+	var GEO_DATA_READY_EVENT = __webpack_require__(15).GEO_DATA_READY_EVENT;
+	var THREE = AFRAME.THREE;
+
+	/**
+	 * Renders geoJson as solid, flat shapes.
+	 */
+	AFRAME.registerComponent('geo-shape-renderer', {
+	  dependencies: ['geo-projection', 'material'],
+
+	  schema: {
+	    isCCW: {
+	      type: 'boolean',
+	      default: false
+	    }
+	  },
+
+	  init: function () {
+	    this.system = this.el.sceneEl.systems['geo-projection'];
+	    this.geoProjectionComponent = this.el.components['geo-projection'];
+	    this.render = this.render.bind(this);
+	    this.el.addEventListener(GEO_DATA_READY_EVENT, this.render);
+	  },
+
+	  update: function (oldData) {
+	    if (!this.geoProjectionComponent.geoJson) {
+	      return;
+	    }
+	    if (this.data.isCCW !== oldData.isCCW) {
+	      this.render();
+	    }
+	  },
+
+	  remove: function () {
+	    this.el.removeEventListener(GEO_DATA_READY_EVENT, this.render);
+	    var obj = this.el.getObject3D('shapeMap');
+	    if (obj) {
+	      this.el.removeObject3D('shapeMap');
+	    }
+	  },
+
+	  render: function () {
+	    var material = this.el.components.material.material;
+	    var geoJson = this.geoProjectionComponent.geoJson;
+	    var projection = this.geoProjectionComponent.projection;
+
+	    var mapRenderContext = this.system.renderToContext(geoJson, projection);
+	    var shapes = mapRenderContext.toShapes(this.data.isCCW);
+	    var shapeGeometry = new THREE.ShapeBufferGeometry(shapes);
+	    var shapeMesh = new THREE.Mesh(shapeGeometry, material);
+
+	    this.el.setObject3D('shapeMap', shapeMesh);
+	  }
+	});
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* global AFRAME */
+
+	var GEO_DATA_READY_EVENT = __webpack_require__(15).GEO_DATA_READY_EVENT;
+	var THREE = AFRAME.THREE;
+
+	/**
+	 * Renders GeoJSON as extruded shapes.
+	 */
+	AFRAME.registerComponent('geo-extrude-renderer', {
+	  dependencies: ['geo-projection', 'material'],
+
+	  schema: {
+	    extrudeAmount: {
+	      default: 1
+	    },
+	    isCCW: {
+	      type: 'boolean',
+	      default: false
+	    }
+	  },
+
+	  init: function () {
+	    this.system = this.el.sceneEl.systems['geo-projection'];
+	    this.geoProjectionComponent = this.el.components['geo-projection'];
+	    this.render = this.render.bind(this);
+	    this.el.addEventListener(GEO_DATA_READY_EVENT, this.render);
+	  },
+
+	  update: function (oldData) {
+	    if (!this.geoProjectionComponent.geoJson) {
+	      return;
+	    }
+	    if (this.data.isCCW !== oldData.isCCW || this.data.extrudeAmount !== oldData.extrudeAmount) {
+	      this.render();
+	    }
+	  },
+
+	  remove: function () {
+	    this.el.removeEventListener(GEO_DATA_READY_EVENT, this.render);
+	    var obj = this.el.getObject3D('extrudeMap');
+	    if (obj) {
+	      this.el.removeObject3D('extrudeMap');
+	    }
+	  },
+
+	  render: function () {
+	    var material = this.el.components.material.material;
+	    var geoJson = this.geoProjectionComponent.geoJson;
+	    var projection = this.geoProjectionComponent.projection;
+
+	    var mapRenderContext = this.system.renderToContext(geoJson, projection);
+	    const extrudeSettings = {
+	      amount: this.data.extrudeAmount,
+	      bevelEnabled: false
+	    };
+	    var shapes = mapRenderContext.toShapes(this.data.isCCW);
+	    var shapeGeometry = new THREE.ExtrudeBufferGeometry(shapes, extrudeSettings);
+	    var extrudeMesh = new THREE.Mesh(shapeGeometry, material);
+
+	    this.el.setObject3D('extrudeMap', extrudeMesh);
+	  }
+	});
 
 
 /***/ })
