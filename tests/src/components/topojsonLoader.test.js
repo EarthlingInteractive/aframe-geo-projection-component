@@ -120,7 +120,7 @@ suite('topojson-loader component', function () {
             coordinates: [[-69.9009900990099, 12.451814888520133], [-69.9009900990099, 12.469176478194726]]
           }
         };
-        sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { geoJson: expectedGeoJsonSnippet }});
+        sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { geoJson: expectedGeoJsonSnippet } });
       });
     });
     suite('when topologyObject is not defined', function () {
@@ -144,7 +144,7 @@ suite('topojson-loader component', function () {
             ]
           }
         };
-        sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { geoJson: expectedGeoJsonSnippet }});
+        sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { geoJson: expectedGeoJsonSnippet } });
       });
     });
     suite('when topologyObject does not exist in the TopoJSON src file', function () {
@@ -156,6 +156,6 @@ suite('topojson-loader component', function () {
           },
           'TopologyObject with name bad could not be found.');
       });
-    })
+    });
   });
 });

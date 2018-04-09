@@ -99,7 +99,7 @@ suite('geojson-loader component', function () {
 
       component.onSrcLoaded(text);
 
-      sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { geoJson: expectedGeoJson }});
+      sinon.assert.calledWithMatch(eventHandlerSpy, { detail: { geoJson: expectedGeoJson } });
     });
   });
 });

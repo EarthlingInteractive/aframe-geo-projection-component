@@ -1,4 +1,4 @@
-/* global assert, setup, suite, test */
+/* global assert, sinon, setup, suite, test */
 require('aframe');
 require('../../../index');
 require('../../../src/components/outlineRenderer');
@@ -79,7 +79,7 @@ suite('geo-outline-renderer', function () {
     suite('when a color has been set', function () {
       test('uses a LineBasicMaterial with that color for the material', function () {
         component.data.color = 'red';
-        component.update({ color: ''});
+        component.update({ color: '' });
         assert.isTrue(component.material.color.equals(new THREE.Color('red')));
         assert.instanceOf(component.material, THREE.LineBasicMaterial);
       });
@@ -88,7 +88,7 @@ suite('geo-outline-renderer', function () {
       test('does not change the material', function () {
         el.setAttribute('material', { color: 'blue' });
         component.data.color = '';
-        component.update({ color: ''});
+        component.update({ color: '' });
         assert.equal(component.material, el.components.material.material);
       });
     });
@@ -96,7 +96,7 @@ suite('geo-outline-renderer', function () {
       test('uses the entity material', function () {
         el.setAttribute('material', { color: 'blue' });
         component.data.color = '';
-        component.update({ color: 'green'});
+        component.update({ color: 'green' });
         assert.isTrue(component.material.color.equals(new THREE.Color('blue')));
       });
     });

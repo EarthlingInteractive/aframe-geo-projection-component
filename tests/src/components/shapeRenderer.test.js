@@ -1,4 +1,4 @@
-/* global assert, setup, suite, test */
+/* global assert, sinon, setup, suite, test */
 require('aframe');
 require('../../../index');
 require('../../../src/components/shapeRenderer');

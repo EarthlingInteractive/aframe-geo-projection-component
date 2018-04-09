@@ -133,7 +133,7 @@ suite('geo-projection component', function () {
   });
 
   suite('#onSrcLoaded', function () {
-    var event = { detail: { geoJson: geoJson }};
+    var event = { detail: { geoJson: geoJson } };
     test('stores the GeoJson from the event', function () {
       component.onSrcLoaded(event);
       assert.equal(component.geoJson, geoJson);
