@@ -15,11 +15,9 @@
 
       <a-entity rotation="-90 0 0"
                 material="color: #A46C39;"
+                topojson-loader="src: #json-us; topologyObject: states;"
                 geo-projection="
-                  src: #json-us;
-                  srcType: topojson;
                   projection: geoIdentity;
-                  topologyObject: states;
                   height: 10;
                   width: 20;"
                 geo-shape-renderer
