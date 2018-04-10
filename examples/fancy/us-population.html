@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>A-Frame Geo Projection Component - U.S. Population 2017 (est.)</title>
+    <meta name="description" content="Visualization of estimated U.S. population by state in 2017"></meta>
+    <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v3.12.4/dist/aframe-extras.min.js"></script>
+    <script src="https://unpkg.com/super-hands@2.1.0/dist/super-hands.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-queue.v3.js"></script>
+    <script src="../../dist/aframe-geo-projection-component.min.js"></script>
+</head>
+<body>
+<script>
+  AFRAME.registerComponent('geo-extrude-population-renderer', {
+    dependencies: ['geo-projection'],
+    schema: {
+      maxExtrudeHeight: {
+        default: 2
+      }
+    },
+    init: function () {
+      this.system = this.el.sceneEl.systems['geo-projection'];
+      this.geoProjectionComponent = this.el.components['geo-projection'];
+      this.geoJsonReady = this.geoJsonReady.bind(this);
+      // Wait for geoJson to finish loading to avoid race conditions
+      this.el.addEventListener('geo-src-loaded', this.geoJsonReady);
+    },
+    update: function (oldData) {
+      if (!this.geoProjectionComponent.geoJson) {
+        return;
+      }
+      if (this.data.maxExtrudeHeight !== oldData.maxExtrudeHeight) {
+        this.geoJsonReady();
+      }
+    },
+    geoJsonReady: function () {
+      // Now kick off loading the data
+      d3.queue()
+        .defer(d3.csv, '../data/us-population-2017.csv', function (d) {
+          return {
+            state: d.state,
+            population: +d.population
+          }
+        })
+        .defer(d3.csv, '../data/us-state-county-geocodes-v2016.csv')
+        .await(this.onDataLoaded.bind(this));
+    },
+    onDataLoaded: function(error, populationData, geocodes) {
+      if (error) throw error;
+      var stateFips = geocodes.filter(function (row) {
+        return row['Summary_Level'] === '040'
+      });
+      var maxPopulation = d3.max(populationData, function (d) {
+        return d.population;
+      });
+      var populationByFipsCode = populationData.reduce(function (accum, d) {
+        var fipsForState = stateFips.find(function (fipsRow) { return fipsRow['Area_Name'] === d.state; });
+        var fipsCode = fipsForState['State_Code_FIPS'];
+        accum[fipsCode] = d.population;
+        return accum;
+      }, {});
+      this.render(populationByFipsCode, maxPopulation, this.data.maxExtrudeHeight);
+    },
+    render: function (populationByFipsCode, maxPopulation, maxExtrudeHeight) {
+      if (!populationByFipsCode) return;
+      var material = this.el.components.material.material;
+      var extrudeGeometry = null;
+      var stateOutlineVertices = [];
+      // Split the geoJson into features and render each one individually so that we can set a different
+      // extrusion height for each based on the population.
+      this.geoProjectionComponent.geoJson.features.forEach(function (feature) {
+        var population = populationByFipsCode[feature.id];
+        var extrudeAmount = (population / maxPopulation) * maxExtrudeHeight;
+        const extrudeSettings = {
+          amount: extrudeAmount,
+          bevelEnabled: false
+        };
+
+        var mapRenderContext = this.system.renderToContext(feature, this.geoProjectionComponent.projection);
+        const stateShapes = mapRenderContext.toShapes();
+
+        // Gather the outline of the state and set the height of the outline to the extrude level
+        // so that the top of the state is outlined
+        stateOutlineVertices = stateOutlineVertices.concat(mapRenderContext.toVertices(extrudeAmount));
+
+        // Merge all the extruded feature geometries together for better rendering performance
+        // Need to use ExtrudeGeometry here instead of ExtrudeBufferGeometry because the latter doesn't merge properly
+        // in this version of Three.js
+        var extrudedFeatureGeometry = new THREE.ExtrudeGeometry(stateShapes, extrudeSettings);
+        if (!extrudeGeometry) {
+          extrudeGeometry = extrudedFeatureGeometry;
+        } else {
+          extrudeGeometry.merge(extrudedFeatureGeometry);
+        }
+      }.bind(this));
+
+      // Convert the extrude geometry into a buffer geometry for better rendering performance
+      var extrudeBufferGeometry = new THREE.BufferGeometry();
+      extrudeBufferGeometry.fromGeometry(extrudeGeometry);
+
+      var sideMaterial = new THREE.MeshStandardMaterial( { color: 0xb3763e } );
+      var extrudedMap = new THREE.Mesh(extrudeBufferGeometry, [material, sideMaterial]);
+      this.el.setObject3D('map', extrudedMap);
+
+      var stateOutlineGeometry = new THREE.BufferGeometry();
+      stateOutlineGeometry.addAttribute('position', new THREE.Float32BufferAttribute(stateOutlineVertices, 3));
+      var stateOutlineMaterial = new THREE.LineBasicMaterial( { color: 0xa40000 } );
+      var stateOutlines = new THREE.LineSegments(stateOutlineGeometry, stateOutlineMaterial);
+      this.el.setObject3D('lines', stateOutlines);
+    }
+  });
+</script>
+<a-scene>
+    <a-assets>
+        <a-asset-item id="json-us" src="https://unpkg.com/us-atlas@1/us/10m.json" />
+    </a-assets>
+    <a-sky color="#ECECEC"></a-sky>
+    <a-entity id="map"
+              rotation="-90 0 0"
+              material="color: #A46C39;"
+              topojson-loader="src: #json-us; topologyObject: states;"
+              geo-projection="
+                  projection: geoIdentity;
+                  height: 6;
+                  width: 10;"
+              geo-extrude-population-renderer
+    >
+    </a-entity>
+    <a-locomotor>
+        <a-entity hand-controls="left" super-hands></a-entity>
+        <a-entity hand-controls="right" super-hands></a-entity>
+    </a-locomotor>
+</a-scene>
+</body>
+</html>

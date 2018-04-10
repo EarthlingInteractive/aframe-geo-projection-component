@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>A-Frame Geo Projection Component - Rendering TopoJson</title>
+    <meta name="description" content="Example of rendering map from TopoJSON using Geo Projection component."></meta>
+    <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+    <script src="../../dist/aframe-geo-projection-component.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-assets>
+        <a-asset-item id="json-us" src="https://unpkg.com/us-atlas@1/us/10m.json" />
+      </a-assets>
+
+      <a-entity rotation="-90 0 0"
+                material="color: #A46C39;"
+                topojson-loader="src: #json-us; topologyObject: states;"
+                geo-projection="
+                  projection: geoIdentity;
+                  height: 10;
+                  width: 20;"
+                geo-shape-renderer
+                geo-outline-renderer="color: blue"
+      >
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
