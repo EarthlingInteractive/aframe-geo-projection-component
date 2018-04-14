@@ -12,3 +12,5 @@ require('./src/components/topojsonLoader');
 require('./src/components/outlineRenderer');
 require('./src/components/shapeRenderer');
 require('./src/components/extrudeRenderer');
+require('./src/components/selection');
+require('./src/components/selectionMask');
