@@ -62,14 +62,14 @@ suite('geo-projection component', function () {
 
       component.init();
 
-      el.emit(constants.GEO_SRC_LOADED_EVENT);
+      el.emit(constants.GEO_SRC_LOADED_EVENT, {});
 
       sinon.assert.called(onSrcLoadedSpy);
     });
   });
 
   suite('#remove', function () {
-    test('stopos listening for the GEO_SRC_LOADED_EVENT event', function () {
+    test('stops listening for the GEO_SRC_LOADED_EVENT event', function () {
       var onSrcLoadedSpy = sandbox.spy();
       component.onSrcLoaded = onSrcLoadedSpy;
 
@@ -77,7 +77,7 @@ suite('geo-projection component', function () {
 
       component.remove();
 
-      el.emit(constants.GEO_SRC_LOADED_EVENT);
+      el.emit(constants.GEO_SRC_LOADED_EVENT, {});
 
       sinon.assert.notCalled(onSrcLoadedSpy);
     });

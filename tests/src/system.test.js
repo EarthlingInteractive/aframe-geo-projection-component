@@ -14,10 +14,7 @@ suite('geo-projection system', function () {
 
   setup(function (done) {
     el = entityFactory();
-    el.addEventListener('componentinitialized', function (evt) {
-      if (evt.detail.name !== 'position') {
-        return;
-      }
+    el.addEventListener('loaded', function (evt) {
       system = el.sceneEl.systems['geo-projection'];
       done();
     });
