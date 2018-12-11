@@ -7,3 +7,5 @@ npm-debug.log
 .component
 package-lock.json
 yarn.lock
+coverage
+.idea
